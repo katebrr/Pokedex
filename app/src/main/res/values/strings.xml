@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Pokedex</string>
+    <string name="hint_search_bar">Search for...</string>
 </resources>
