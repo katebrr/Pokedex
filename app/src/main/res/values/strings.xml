@@ -2,4 +2,8 @@
     <string name="app_name">Pokedex</string>
     <string name="hint_search_bar">Search for...</string>
     <string name="pokedex">POKEDEX</string>
+    <string name="types">Types</string>
+    <string name="attacks">Attacks</string>
+    <string name="zones">Zones</string>
+    <string name="pokemons_first_generation">Pokemons I Generation</string>
 </resources>

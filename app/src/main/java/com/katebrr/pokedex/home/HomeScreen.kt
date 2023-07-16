@@ -3,6 +3,7 @@ package com.katebrr.pokedex.home
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,10 +27,6 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -41,14 +38,24 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.katebrr.pokedex.MyPokedexApp
 import com.katebrr.pokedex.R
-import com.katebrr.pokedex.ui.theme.PokedexTheme
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreenRoute(
+    navigateToPokedex: () -> Unit,
+    navigateToPokemons: () -> Unit,
+    navigateToTypes: () -> Unit,
+    navigateToAttacks: () -> Unit,
+    navigateToZones: () -> Unit
+) {
+    HomeScreen(viewModel = HomeViewModel(), navigateToPokedex = navigateToPokedex)
+}
+
+@Composable
+fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, navigateToPokedex: () -> Unit) {
+    val query = viewModel.query
+
     Column(
         modifier
             .padding(20.dp)
@@ -57,9 +64,11 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         PokedexCard(
             modifier
                 .padding(vertical = 10.dp)
-                .fillMaxWidth()
+                .fillMaxWidth().clickable { navigateToPokedex() }
         )
         GenerationCard(
+            query = query,
+            onQueryChange = viewModel::onQueryChange,
             modifier
                 .padding(vertical = 10.dp)
                 .fillMaxWidth()
@@ -70,7 +79,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             //  modifier = Modifier.height(200.dp)
         ) {
             Cards(
-                title = "Types",
+                title = stringResource(R.string.types),
                 color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier
                     .padding(8.dp)
@@ -79,7 +88,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             )
             Column(modifier = Modifier.weight(1f)) {
                 Cards(
-                    title = "Attacks",
+                    title = stringResource(R.string.attacks),
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier
                         .padding(8.dp)
@@ -87,7 +96,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         .fillMaxSize()
                 )
                 Cards(
-                    title = "Zones",
+                    title = stringResource(R.string.zones),
                     color = MaterialTheme.colorScheme.tertiaryContainer,
                     modifier = Modifier
                         .padding(8.dp)
@@ -108,7 +117,8 @@ private fun PokedexCard(modifier: Modifier = Modifier) {
         )
     )
     Card(
-        modifier = modifier.height(250.dp),
+        modifier = modifier
+            .height(250.dp),
         // colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(10.dp)
     ) {
@@ -141,7 +151,11 @@ private fun PokedexCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun GenerationCard(modifier: Modifier = Modifier) {
+private fun GenerationCard(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.outlineVariant),
@@ -155,8 +169,8 @@ private fun GenerationCard(modifier: Modifier = Modifier) {
                     .padding(10.dp)
                     .fillMaxWidth(), contentScale = ContentScale.FillWidth
             )
-            Text(text = "Pokemons I Generation")
-            SearchPokemonBar(modifier = Modifier.padding(16.dp))
+            Text(text = stringResource(R.string.pokemons_first_generation))
+            SearchPokemonBar(query, onQueryChange, Modifier.padding(16.dp))
         }
 
 
@@ -203,12 +217,16 @@ private fun Cards(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchPokemonBar(modifier: Modifier = Modifier) {
+fun SearchPokemonBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val hint = stringResource(R.string.hint_search_bar)
-    var query by remember { mutableStateOf("") }
+
     SearchBar(
         query = query,
-        onQueryChange = { query = it },
+        onQueryChange = onQueryChange,
         onSearch = { /*TODO*/ },
         active = false,
         onActiveChange = {},
@@ -224,11 +242,11 @@ fun SearchPokemonBar(modifier: Modifier = Modifier) {
             Icon(Icons.Default.Search, contentDescription = "Search for Pokemon Bar")
         },
         trailingIcon = {
-            IconButton(onClick = { query = "" }) {
+            IconButton(onClick = { onQueryChange("") }) {
                 Icon(Icons.Default.Close, contentDescription = "Clear Search Field")
             }
         },
-        colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.onPrimary),
+        colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
         shape = RoundedCornerShape(10.dp),
         tonalElevation = 3.dp
     ) {
@@ -236,10 +254,10 @@ fun SearchPokemonBar(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    PokedexTheme {
-        HomeScreen()
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    PokedexTheme {
+//        HomeScreen(viewModel = HomeViewModel())
+//    }
+//}
