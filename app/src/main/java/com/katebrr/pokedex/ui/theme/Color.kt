@@ -3,6 +3,7 @@ package com.katebrr.pokedex.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val md_theme_light_primary = Color(0xFFBD1204)
+
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 val md_theme_light_primaryContainer = Color(0xFFFFDAD4)
 val md_theme_light_onPrimaryContainer = Color(0xFF400100)
