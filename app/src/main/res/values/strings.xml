@@ -6,4 +6,6 @@
     <string name="attacks">Attacks</string>
     <string name="zones">Zones</string>
     <string name="pokemons_first_generation">Pokemons I Generation</string>
+    <string name="list_of_pokemons">List of Pokemons</string>
+    <string name="my_pokedex">My Pokedex</string>
 </resources>

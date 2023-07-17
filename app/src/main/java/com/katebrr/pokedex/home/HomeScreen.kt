@@ -49,11 +49,20 @@ fun HomeScreenRoute(
     navigateToAttacks: () -> Unit,
     navigateToZones: () -> Unit
 ) {
-    HomeScreen(viewModel = HomeViewModel(), navigateToPokedex = navigateToPokedex)
+    HomeScreen(
+        viewModel = HomeViewModel(),
+        navigateToPokedex = navigateToPokedex,
+        navigateToPokemons = navigateToPokemons
+    )
 }
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, navigateToPokedex: () -> Unit) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel,
+    navigateToPokedex: () -> Unit,
+    navigateToPokemons: () -> Unit
+) {
     val query = viewModel.query
 
     Column(
@@ -64,7 +73,8 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, navigate
         PokedexCard(
             modifier
                 .padding(vertical = 10.dp)
-                .fillMaxWidth().clickable { navigateToPokedex() }
+                .fillMaxWidth()
+                .clickable { navigateToPokedex() }
         )
         GenerationCard(
             query = query,
@@ -72,6 +82,7 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, navigate
             modifier
                 .padding(vertical = 10.dp)
                 .fillMaxWidth()
+                .clickable { navigateToPokemons() }
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,

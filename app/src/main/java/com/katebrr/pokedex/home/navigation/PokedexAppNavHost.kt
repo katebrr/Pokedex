@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.katebrr.pokedex.pokedex.navigation.pokedexScreen
+import com.katebrr.pokedex.pokemon.list.navigation.pokemonListScreen
 
 @Composable
 fun PokedexAppNavHost(
@@ -19,6 +20,7 @@ fun PokedexAppNavHost(
     ) {
         homeScreen(mainNavController = navController)
         pokedexScreen(onBackClick = navController::popBackStack)
+        pokemonListScreen(onBackClick = navController::popBackStack)
 
     }
 }
