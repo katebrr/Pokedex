@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.katebrr.pokedex.pokedex.navigation.pokedexScreen
-import com.katebrr.pokedex.pokemon.list.navigation.pokemonListScreen
+import com.katebrr.pokedex.features.list.navigation.pokemonListScreen
+import com.katebrr.pokedex.features.pokedex.navigation.pokedexScreen
 
 @Composable
 fun PokedexAppNavHost(

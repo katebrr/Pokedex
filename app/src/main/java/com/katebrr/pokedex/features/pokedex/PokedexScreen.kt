@@ -1,4 +1,4 @@
-package com.katebrr.pokedex.pokedex
+package com.katebrr.pokedex.features.pokedex
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding

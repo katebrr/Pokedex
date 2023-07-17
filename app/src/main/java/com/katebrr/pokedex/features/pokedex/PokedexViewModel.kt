@@ -1,4 +1,4 @@
-package com.katebrr.pokedex.pokedex
+package com.katebrr.pokedex.features.pokedex
 
 import androidx.lifecycle.ViewModel
 
