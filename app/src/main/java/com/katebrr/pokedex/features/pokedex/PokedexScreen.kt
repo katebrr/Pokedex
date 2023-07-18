@@ -13,11 +13,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.katebrr.pokedex.R
 
 @Composable
-fun PokedexScreenRoute(onBackClick: () -> Unit) {
-    PokedexScreen(onBackClick = onBackClick, viewModel = PokedexViewModel())
+fun PokedexScreenRoute(onBackClick: () -> Unit, viewModel: PokedexViewModel = hiltViewModel()) {
+    PokedexScreen(onBackClick = onBackClick, viewModel = viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

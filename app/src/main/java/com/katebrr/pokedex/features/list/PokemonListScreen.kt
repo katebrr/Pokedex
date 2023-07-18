@@ -34,17 +34,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.katebrr.pokedex.R
 import com.katebrr.pokedex.ui.components.SearchPokemonBar
 
 
 @Composable
-fun PokemonListScreenRoute(
-    onBackClick: () -> Unit,
-    viewModel: PokemonListViewModel = hiltViewModel()
-) {
-    PokemonListScreen(onBackClick = onBackClick, viewModel = viewModel)
+fun PokemonListScreenRoute(onBackClick: () -> Unit
+//viewModel: PokemonListViewModel = hiltViewModel()
+ ) {
+    PokemonListScreen(onBackClick = onBackClick, viewModel = PokemonListViewModel() )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,7 +133,7 @@ fun PokemonList() {
 
 @Composable
 fun PokemonItem(
-    //   pokemon: Pokemon
+ //   pokemon: Pokemon
 ) {
 
     var isItemExpanded by rememberSaveable {
@@ -148,7 +146,7 @@ fun PokemonItem(
         ) {
             //    Image(painter = , contentDescription = )
             // Text()
-            //  Text()
+           //  Text()
             IconButton(onClick = { isItemExpanded = !isItemExpanded }) {
 
             }

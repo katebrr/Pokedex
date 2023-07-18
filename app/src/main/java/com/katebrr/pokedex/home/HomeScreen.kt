@@ -29,7 +29,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.katebrr.pokedex.R
 import com.katebrr.pokedex.ui.components.SearchPokemonBar
 
@@ -40,7 +39,7 @@ fun HomeScreenRoute(
     navigateToTypes: () -> Unit,
     navigateToAttacks: () -> Unit,
     navigateToZones: () -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = HomeViewModel()
 ) {
     HomeScreen(
         viewModel = viewModel,

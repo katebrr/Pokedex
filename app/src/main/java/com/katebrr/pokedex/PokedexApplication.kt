@@ -1,8 +1,9 @@
 package com.katebrr.pokedex
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
-
-@HiltAndroidApp
-class PokedexApplication: Application() {
-}
+//import android.app.Application
+//import dagger.hilt.android.HiltAndroidApp
+//
+//@HiltAndroidApp
+//
+//class PokedexApplication: Application() {
+//}
