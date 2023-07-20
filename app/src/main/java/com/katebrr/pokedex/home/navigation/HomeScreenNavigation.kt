@@ -6,6 +6,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.katebrr.pokedex.features.list.navigation.navigateToPokemons
 import com.katebrr.pokedex.features.pokedex.navigation.navigateToPokedex
+import com.katebrr.pokedex.features.types.navigation.navigateToTypes
 import com.katebrr.pokedex.home.HomeScreenRoute
 
 const val homeScreenRoute = "home"
@@ -19,7 +20,7 @@ fun NavGraphBuilder.homeScreen(mainNavController: NavController) {
         HomeScreenRoute(
             navigateToPokedex = { mainNavController.navigateToPokedex() },
             navigateToPokemons = { mainNavController.navigateToPokemons(it) },
-            navigateToTypes= { /* mainNavController.navigateToTypes() TODO */ },
+            navigateToTypes= { mainNavController.navigateToTypes() },
             navigateToAttacks = { /* mainNavController.navigateToAttacks() TODO */ },
             navigateToZones = { /* mainNavController.navigateToZones() TODO */ },
         )

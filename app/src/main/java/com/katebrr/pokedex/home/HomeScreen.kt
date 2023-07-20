@@ -45,7 +45,8 @@ fun HomeScreenRoute(
     HomeScreen(
         viewModel = viewModel,
         navigateToPokedex = navigateToPokedex,
-        navigateToPokemons = navigateToPokemons
+        navigateToPokemons = navigateToPokemons,
+        navigateToTypes = navigateToTypes
     )
 }
 
@@ -54,7 +55,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     navigateToPokedex: () -> Unit,
-    navigateToPokemons: (String) -> Unit
+    navigateToPokemons: (String) -> Unit,
+    navigateToTypes: () -> Unit
 ) {
     val query = viewModel.query
 
@@ -90,6 +92,7 @@ fun HomeScreen(
                     .padding(8.dp)
                     .weight(1f)
                     .fillMaxSize()
+                    .clickable{ navigateToTypes() }
             )
             Column(modifier = Modifier.weight(1f)) {
                 Cards(

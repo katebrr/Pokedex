@@ -2,6 +2,7 @@ package com.katebrr.pokedex.features.list
 
 import android.widget.Toast.*
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,15 +56,17 @@ import com.katebrr.pokedex.ui.components.SearchPokemonBar
 fun PokemonListScreenRoute(
     searchValue: String,
     onBackClick: () -> Unit,
+    navigateToPokemonDetail: (String) -> Unit,
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-   // val searchValue = viewModel.searchArgs.search
+    // val searchValue = viewModel.searchArgs.search
 
     PokemonListScreen(
-         query = searchValue,
+        query = searchValue,
         onBackClick = onBackClick,
         onQueryChange = { viewModel.onQueryChange(it) },
+        navigateToPokemon = navigateToPokemonDetail,
         uiState = uiState
     )
 }
@@ -74,6 +77,7 @@ fun PokemonListScreen(
     query: String,
     onBackClick: () -> Unit,
     onQueryChange: (String) -> Unit,
+    navigateToPokemon: (String) -> Unit,
     uiState: PokemonListUiState
 ) {
 
@@ -146,7 +150,7 @@ fun PokemonListScreen(
                             .padding(16.dp)
 
                     )
-                    PokemonList(pokemons = uiState.pokemons)
+                    PokemonList(pokemons = uiState.pokemons, navigateToPokemon = navigateToPokemon)
                 }
             }
         }
@@ -155,20 +159,23 @@ fun PokemonListScreen(
 
 
 @Composable
-fun PokemonList(pokemons: List<Pokemon>) {
+fun PokemonList(
+    pokemons: List<Pokemon>,
+    navigateToPokemon: (String) -> Unit
+) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
         items(pokemons) { pokemon ->
-            PokemonItem(pokemon)
+            PokemonItem(pokemon, navigateToPokemon)
         }
     }
 }
 
 @Composable
-fun PokemonItem(pokemon: Pokemon) {
+fun PokemonItem(pokemon: Pokemon, navigateToPokemon: (String) -> Unit) {
 
     var isItemExpanded by rememberSaveable {
         mutableStateOf(false)
@@ -176,20 +183,28 @@ fun PokemonItem(pokemon: Pokemon) {
 
     ListItem(
         headlineContent = { Text(text = pokemon.name) },
-        modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp)),
+        modifier = Modifier
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.outlineVariant,
+                RoundedCornerShape(10.dp)
+            )
+            .clickable { navigateToPokemon(pokemon.id.toString()) },
         overlineContent = { Text(text = pokemon.id.toString()) },
         supportingContent = {
             if (isItemExpanded) {
                 ExpandedItem(pokemon.apiTypes)
             }
         },
-        leadingContent = { SubcomposeAsyncImage( modifier = Modifier.size(48.dp),
-            model = pokemon.sprite,
-            contentDescription = null,
-            loading = {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
-        )},
+        leadingContent = {
+            SubcomposeAsyncImage(modifier = Modifier.size(48.dp),
+                model = pokemon.sprite,
+                contentDescription = null,
+                loading = {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            )
+        },
         trailingContent = {
             IconButton(onClick = { isItemExpanded = !isItemExpanded }) {
                 Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
@@ -204,7 +219,7 @@ fun ExpandedItem(pokemonTypes: List<PokemonTypes>) {
     Column(modifier = Modifier.fillMaxWidth()) {
         pokemonTypes.map { type ->
             Row(modifier = Modifier.fillMaxWidth()) {
-                SubcomposeAsyncImage( modifier = Modifier.size(24.dp),
+                SubcomposeAsyncImage(modifier = Modifier.size(24.dp),
                     model = type.image,
                     contentDescription = null,
                     loading = {
