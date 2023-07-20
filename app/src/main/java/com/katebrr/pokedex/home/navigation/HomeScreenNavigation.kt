@@ -18,7 +18,7 @@ fun NavGraphBuilder.homeScreen(mainNavController: NavController) {
     composable(route = homeScreenRoute) {
         HomeScreenRoute(
             navigateToPokedex = { mainNavController.navigateToPokedex() },
-            navigateToPokemons = { mainNavController.navigateToPokemons() },
+            navigateToPokemons = { mainNavController.navigateToPokemons(it) },
             navigateToTypes= { /* mainNavController.navigateToTypes() TODO */ },
             navigateToAttacks = { /* mainNavController.navigateToAttacks() TODO */ },
             navigateToZones = { /* mainNavController.navigateToZones() TODO */ },

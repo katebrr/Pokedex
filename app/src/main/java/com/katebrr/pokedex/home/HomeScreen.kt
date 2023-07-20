@@ -29,17 +29,18 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.katebrr.pokedex.R
 import com.katebrr.pokedex.ui.components.SearchPokemonBar
 
 @Composable
 fun HomeScreenRoute(
     navigateToPokedex: () -> Unit,
-    navigateToPokemons: () -> Unit,
+    navigateToPokemons: (String) -> Unit,
     navigateToTypes: () -> Unit,
     navigateToAttacks: () -> Unit,
     navigateToZones: () -> Unit,
-    viewModel: HomeViewModel = HomeViewModel()
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     HomeScreen(
         viewModel = viewModel,
@@ -53,7 +54,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel,
     navigateToPokedex: () -> Unit,
-    navigateToPokemons: () -> Unit
+    navigateToPokemons: (String) -> Unit
 ) {
     val query = viewModel.query
 
@@ -71,10 +72,11 @@ fun HomeScreen(
         GenerationCard(
             query = query,
             onQueryChange = viewModel::onQueryChange,
-            modifier
+            onNavigateToPokemons = navigateToPokemons,
+            modifier = modifier
                 .padding(vertical = 10.dp)
                 .fillMaxWidth()
-                .clickable { navigateToPokemons() }
+                .clickable { navigateToPokemons("") }
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -156,6 +158,7 @@ private fun PokedexCard(modifier: Modifier = Modifier) {
 @Composable
 private fun GenerationCard(
     query: String,
+    onNavigateToPokemons: (String) -> Unit,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -163,7 +166,7 @@ private fun GenerationCard(
         modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(10.dp),
-        // border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
@@ -173,7 +176,7 @@ private fun GenerationCard(
                     .fillMaxWidth(), contentScale = ContentScale.FillWidth
             )
             Text(text = stringResource(R.string.pokemons_first_generation))
-            SearchPokemonBar(query, onQueryChange, MaterialTheme.colorScheme.background, Modifier.padding(16.dp))
+            SearchPokemonBar(query, onQueryChange, onNavigateToPokemons, MaterialTheme.colorScheme.background, Modifier.padding(16.dp))
         }
 
 

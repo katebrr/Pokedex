@@ -24,6 +24,7 @@ import com.katebrr.pokedex.R
 fun SearchPokemonBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    onSearch:(String) -> Unit = {},
     color: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier
 ) {
@@ -32,7 +33,7 @@ fun SearchPokemonBar(
     SearchBar(
         query = query,
         onQueryChange = onQueryChange,
-        onSearch = { /*TODO*/ },
+        onSearch = {onSearch(it)},
         active = false,
         onActiveChange = {},
         modifier = modifier,
