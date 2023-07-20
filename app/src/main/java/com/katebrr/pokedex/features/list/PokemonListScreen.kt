@@ -60,12 +60,12 @@ fun PokemonListScreenRoute(
     viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    // val searchValue = viewModel.searchArgs.search
+    val query by viewModel.search.collectAsState()
 
     PokemonListScreen(
-        query = searchValue,
+        query = query,
         onBackClick = onBackClick,
-        onQueryChange = { viewModel.onQueryChange(it) },
+        onQueryChange = viewModel::onQueryChange,
         navigateToPokemon = navigateToPokemonDetail,
         uiState = uiState
     )
@@ -81,10 +81,7 @@ fun PokemonListScreen(
     uiState: PokemonListUiState
 ) {
 
-    val query by rememberSaveable {
-        mutableStateOf(query)
-    }
-    //viewModel.searchQuery
+
     // state of the menu
     var expandedFilter by rememberSaveable {
         mutableStateOf(false)
@@ -144,7 +141,8 @@ fun PokemonListScreen(
                 is PokemonListUiState.Success -> {
                     SearchPokemonBar(
                         query = query,
-                        onQueryChange = { onQueryChange(it) },
+                        onQueryChange = onQueryChange,
+                      //  onSearch = onSearch,
                         color = MaterialTheme.colorScheme.outlineVariant,
                         modifier = Modifier
                             .padding(16.dp)

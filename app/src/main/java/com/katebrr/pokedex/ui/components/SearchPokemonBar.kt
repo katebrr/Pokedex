@@ -12,14 +12,16 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.katebrr.pokedex.R
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchPokemonBar(
     query: String,
@@ -30,10 +32,13 @@ fun SearchPokemonBar(
 ) {
     val hint = stringResource(R.string.hint_search_bar)
 
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     SearchBar(
         query = query,
         onQueryChange = onQueryChange,
-        onSearch = {onSearch(it)},
+        onSearch = { onSearch(it.trim())
+            keyboardController?.hide()},
         active = false,
         onActiveChange = {},
         modifier = modifier,
@@ -59,3 +64,5 @@ fun SearchPokemonBar(
 
     }
 }
+
+

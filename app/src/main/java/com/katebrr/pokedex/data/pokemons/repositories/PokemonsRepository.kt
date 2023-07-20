@@ -14,6 +14,8 @@ class PokemonsRepository @Inject constructor(
     override fun getPokemons(): Flow<List<Pokemon>> {
         return flow {
             emit(remoteDataSource.getPokemons().map { it.toDataModel() })
+
         }
+
     }
 }

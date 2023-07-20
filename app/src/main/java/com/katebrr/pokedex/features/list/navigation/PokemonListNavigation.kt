@@ -1,5 +1,6 @@
 package com.katebrr.pokedex.features.list.navigation
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
@@ -10,9 +11,10 @@ import com.katebrr.pokedex.features.list.PokemonListScreenRoute
 const val searchArgs = "search"
 const val pokemonListRoute = "pokemons"
 
-//class SearchArgs(val search: String) {
-//    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[searchArgs]) as String)
-//}
+class SearchArgs(val search: String) {
+    constructor(savedStateHandle: SavedStateHandle) :
+            this(checkNotNull(savedStateHandle[searchArgs]) as String)
+}
 
 
 
