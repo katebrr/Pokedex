@@ -67,6 +67,7 @@ fun PokemonListScreenRoute(
         onBackClick = onBackClick,
         onQueryChange = viewModel::onQueryChange,
         navigateToPokemon = navigateToPokemonDetail,
+        onOrderChoice = {viewModel.onOrderChoice(it)},
         uiState = uiState
     )
 }
@@ -78,16 +79,17 @@ fun PokemonListScreen(
     onBackClick: () -> Unit,
     onQueryChange: (String) -> Unit,
     navigateToPokemon: (String) -> Unit,
+onOrderChoice: (Int) -> Unit,
     uiState: PokemonListUiState
 ) {
 
 
     // state of the menu
-    var expandedFilter by rememberSaveable {
+    var expandedOrderMenu by rememberSaveable {
         mutableStateOf(false)
+
     }
 
-    fun onFilterClick() {}
 
     Scaffold(
         modifier = Modifier,
@@ -103,11 +105,12 @@ fun PokemonListScreen(
                     }
                 },
                 actions = {
-                    FilterMenu(
-                        expanded = expandedFilter,
-                        onIconClick = { expandedFilter = true },
-                        onDismissFilter = { expandedFilter = false },
-                        onFilterChoice = { expandedFilter = false })
+                    OrderMenu(
+                        expanded = expandedOrderMenu,
+                        onIconClick = { expandedOrderMenu = true },
+                        onDismissFilter = { expandedOrderMenu = false },
+                        onOrderChoice = { expandedOrderMenu = false
+                        onOrderChoice(it)})
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -118,7 +121,7 @@ fun PokemonListScreen(
             )
         },
         floatingActionButton = {
-            FilterActionButton(onFilterActionButtonClicked = { onFilterClick() })
+            FilterActionButton(onFilterActionButtonClicked = {  })
 
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -231,11 +234,11 @@ fun ExpandedItem(pokemonTypes: List<PokemonTypes>) {
 }
 
 @Composable
-fun FilterMenu(
+fun OrderMenu(
     expanded: Boolean,
     onIconClick: () -> Unit,
     onDismissFilter: () -> Unit,
-    onFilterChoice: () -> Unit
+    onOrderChoice: (Int) -> Unit
 ) {
 
     val listItems = arrayOf("name A-Z", "name Z-A", "number incr.", "number decr.", "type")
@@ -258,7 +261,7 @@ fun FilterMenu(
             listItems.forEachIndexed { itemIndex, itemValue ->
                 DropdownMenuItem(
                     text = { Text(text = "Order by " + itemValue) },
-                    onClick = { onFilterChoice() })
+                    onClick =  {onOrderChoice(itemIndex)})
             }
         }
     }
