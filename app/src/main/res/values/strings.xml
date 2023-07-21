@@ -9,4 +9,7 @@
     <string name="list_of_pokemons">List of Pokemons</string>
     <string name="my_pokedex">My Pokedex</string>
     <string name="pokemons_types">Pokemon\'s Types</string>
+    <string name="filter_by">Filter by:</string>
+    <string name="by_type">Type</string>
+    <string name="range_of_hp">Range of HP</string>
 </resources>
