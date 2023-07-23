@@ -1,5 +1,6 @@
 package com.katebrr.pokedex.features.list
 
+import android.util.Log
 import android.widget.Toast.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,8 +15,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -28,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Button
@@ -44,6 +49,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
@@ -63,8 +69,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -74,7 +81,6 @@ import com.katebrr.pokedex.data.pokemons.model.Pokemon
 import com.katebrr.pokedex.data.pokemons.model.PokemonTypes
 import com.katebrr.pokedex.ui.components.LoadingView
 import com.katebrr.pokedex.ui.components.SearchPokemonBar
-import com.katebrr.pokedex.ui.theme.PokedexTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -88,6 +94,7 @@ fun PokemonListScreenRoute(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val query by viewModel.search.collectAsState()
+    val filters by viewModel.filterOptions.collectAsState()
 
     PokemonListScreen(
         query = query,
@@ -95,6 +102,14 @@ fun PokemonListScreenRoute(
         onQueryChange = viewModel::onQueryChange,
         navigateToPokemon = navigateToPokemonDetail,
         onOrderChoice = { viewModel.onOrderChoice(it) },
+        filterOptions = filters,
+        onTypesFilterChange = viewModel::onTypesChange,
+        onRangeOfHpChange = viewModel::onRangeOfHpChange,
+        onRangeOfAttackChange = viewModel::onRangeOfAttackChange,
+        onRangeOfDefenseChange = viewModel::onRangeOfDefenseChange,
+        onHasEvolutionChange = viewModel::onHasEvolutionChange,
+        onIsInPokedexChange = viewModel::onIsInPokedexChange,
+        //   onResetFilter = viewModel::onResetFilter,
         uiState = uiState
     )
 }
@@ -107,22 +122,26 @@ fun PokemonListScreen(
     onQueryChange: (String) -> Unit,
     navigateToPokemon: (String) -> Unit,
     onOrderChoice: (Int) -> Unit,
-    uiState: PokemonListUiState
+    filterOptions: FilterOptions,
+    onTypesFilterChange: (List<TypeOption>) -> Unit,
+    onRangeOfHpChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onRangeOfAttackChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onRangeOfDefenseChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onHasEvolutionChange: (Boolean) -> Unit,
+    onIsInPokedexChange: (Boolean) -> Unit,
+    uiState: PokemonListUiState,
 ) {
-
 
     // state of the menu
     var expandedOrderMenu by rememberSaveable {
         mutableStateOf(false)
-
     }
 
-
+    //for the bottom sheet state
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberStandardBottomSheetState(
         initialValue = SheetValue.Hidden, skipHiddenState = false
     )
-    //val scaffoldState = remememberScaf
 
 
     Scaffold(
@@ -195,7 +214,17 @@ fun PokemonListScreen(
                             navigateToPokemon = navigateToPokemon
                         )
                         if (bottomSheetState.isVisible) {
-                            FilterMenu(scope, bottomSheetState)
+                            FilterMenu(
+                                scope,
+                                bottomSheetState,
+                                filterOptions,
+                                onTypesFilterChange,
+                                onRangeOfHpChange,
+                                onRangeOfAttackChange,
+                                onRangeOfDefenseChange,
+                                onHasEvolutionChange,
+                                onIsInPokedexChange
+                            )
                         }
 
                     }
@@ -317,12 +346,22 @@ fun OrderMenu(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterMenu(
-    scope: CoroutineScope ,
-    bottomSheetState: SheetState
+    scope: CoroutineScope,
+    bottomSheetState: SheetState,
+    filters: FilterOptions,
+    onTypesFilterChange: (List<TypeOption>) -> Unit,
+    onRangeOfHpChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onRangeOfAttackChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onRangeOfDefenseChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    onHasEvolutionChange: (Boolean) -> Unit,
+    onIsInPokedexChange: (Boolean) -> Unit
 ) {
     ModalBottomSheet(
         onDismissRequest = { scope.launch { bottomSheetState.hide() } },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         sheetState = bottomSheetState,
         containerColor = MaterialTheme.colorScheme.background
     ) {
@@ -343,6 +382,7 @@ fun FilterMenu(
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.SemiBold
                 )
+
                 Button(
                     onClick = {
                         scope.launch { bottomSheetState.hide() }
@@ -364,46 +404,105 @@ fun FilterMenu(
             }
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = stringResource(R.string.by_type),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 84.dp)) {
+                item {
+                    TypeOptions(
+                        stringResource(R.string.by_type),
+                        filters.types,
+                        onTypesFilterChange
+                    )
+
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(20.dp)
+                    )
+                }
+                item {
+                    FilterByRangeOf(
+                        stringResource(R.string.range_of_hp),
+                        filters.rangeOfHp,
+                        onRangeOfHpChange
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                item {
+                    Divider()
+
+                    FilterByRangeOf(
+                        stringResource(R.string.range_of_attack),
+                        filters.rangeOfAttack,
+                        onRangeOfAttackChange
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+                item {
+                    Divider()
+
+                    FilterByRangeOf(
+                        stringResource(R.string.range_of_defense),
+                        filters.rangeOfDefense,
+                        onRangeOfDefenseChange
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+                item {
+                    Divider()
+
+                    Button(
+                        onClick = {
+                            scope.launch { /*TODO RESET FILTER*/ }
+                        },
+                        modifier = Modifier,
+                        shape = CircleShape,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.LightGray.copy(alpha = 0.3f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
+                        Text(text = "Reset")
+                        Icon(
+                            Icons.Default.DeleteForever,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
             }
-            TypeOptions()
-            Spacer(modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp))
-            Divider()
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = stringResource(R.string.range_of_hp),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-            Spacer(modifier = Modifier.height(64.dp))
+
         }
     }
 
 }
 
+@Composable
+fun FilterName(name: String) {
+    Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Text(
+            text = name,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .paddingFromBaseline(top = 32.dp, bottom = 16.dp),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Normal
+        )
+    }
+}
+
 
 @Composable
-fun TypeOptions() {
-
-
+fun TypeOptions(
+    filterName: String,
+    types: List<TypeOption>,
+    onTypesFilterChange: (List<TypeOption>) -> Unit
+) {
+    FilterName(name = filterName)
     LazyHorizontalGrid(
         rows = GridCells.Fixed(2),
         modifier = Modifier.height(120.dp),
@@ -411,9 +510,35 @@ fun TypeOptions() {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        items(types) { typeItem ->
+            TypeOptionItem(typeItem) {
+                var chosenTypes: List<TypeOption>
+                if (types.all { it.selected }) {
+                    chosenTypes = types.map { typeOption ->
+                        if (typeItem.name != typeOption.name) {
+                            typeOption.copy(selected = false)
+                        } else {
+                            typeItem
+                        }
+                    }
+                } else {
+                    chosenTypes = types.map { typeOption ->
+                        if (typeItem.name == typeOption.name) {
+                            typeOption.copy(selected = !typeOption.selected)
+                        } else {
+                            typeOption
+                        }
+                    }
+                }
 
-        items(typesList) {
-            TypeOptionItem(it)
+                if (chosenTypes.all { !it.selected }) {
+                    chosenTypes = types.map { it.copy(selected = true) }
+                }
+
+                Log.e("Before Type Selected", "${types}")
+                onTypesFilterChange(chosenTypes)
+                Log.e("After Type Selected", "${chosenTypes}")
+            }
         }
 
     }
@@ -422,23 +547,31 @@ fun TypeOptions() {
 }
 
 @Composable
-fun TypeOptionItem(item: TypeOption) {
+fun TypeOptionItem(item: TypeOption, onTypeChange: () -> Unit) {
 
     ListItem(
         headlineContent = { Text(text = item.name) },
         modifier = Modifier
             .background(
-                color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f),
+                color =
+                if (!item.selected) {
+                    MaterialTheme.colorScheme.background
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant.copy(0.2f)
+                },
                 shape = RoundedCornerShape(10.dp)
             )
             .width(160.dp)
             .border(
                 1.dp,
-                MaterialTheme.colorScheme.outlineVariant,
+                if (!item.selected) {
+                    MaterialTheme.colorScheme.outlineVariant
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 RoundedCornerShape(10.dp)
             )
-
-            .clickable { },
+            .clickable { onTypeChange() },
         leadingContent = { Image(painterResource(item.image), contentDescription = null) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent)
 
@@ -447,8 +580,38 @@ fun TypeOptionItem(item: TypeOption) {
 }
 
 @Composable()
-fun FilterBy() {
-
+fun FilterByRangeOf(
+    filterName: String,
+    sliderPosition: ClosedFloatingPointRange<Float>,
+    onSliderValueChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FilterName(name = filterName)
+    Column(
+        Modifier
+            .fillMaxWidth()
+//            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        RangeSlider(
+            modifier = Modifier
+                .semantics { contentDescription = "Localized Description" }
+                .padding(8.dp),
+            value = sliderPosition,
+            onValueChange = { onSliderValueChange(it) },
+            valueRange = 0f..100f,
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                text = sliderPosition.start.toInt().toString(),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Text(
+                text = sliderPosition.endInclusive.toInt().toString(),
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+        }
+    }
 }
 
 @Composable
@@ -462,37 +625,14 @@ fun PokedexOption() {
 }
 
 
-data class TypeOption(
-    val name: String,
-    val image: Int
-)
-
-private val typesList = listOf<TypeOption>(
-    TypeOption("Normal", R.drawable.normal),
-    TypeOption("Combat", R.drawable.fighting),
-    TypeOption("Vol", R.drawable.flying),
-    TypeOption("Poison", R.drawable.poison),
-    TypeOption("Sol", R.drawable.ground),
-    TypeOption("Roche", R.drawable.rock),
-    TypeOption("Insecte", R.drawable.bug),
-    TypeOption("Spectre", R.drawable.ghost),
-    TypeOption("Acier", R.drawable.steel),
-    TypeOption("Feu", R.drawable.fire),
-    TypeOption("Eau", R.drawable.water),
-    TypeOption("Plante", R.drawable.grass),
-    TypeOption("Électrik", R.drawable.electric),
-    TypeOption("Psy", R.drawable.psychic),
-    TypeOption("Glace", R.drawable.ice),
-    TypeOption("Dragon", R.drawable.dragon),
-    TypeOption("Ténèbres", R.drawable.dark),
-    TypeOption("Fée", R.drawable.fairy)
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-fun PreviewBottomSheet(){
-    PokedexTheme{
-        FilterMenu(scope = rememberCoroutineScope(), bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Expanded))
-    }
-}
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewBottomSheet() {
+//    PokedexTheme {
+//        FilterMenu(
+//            scope = rememberCoroutineScope(),
+//            bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Expanded)
+//        )
+//    }
+//}

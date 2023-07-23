@@ -8,6 +8,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.katebrr.pokedex.R
 import com.katebrr.pokedex.core.common.Result
 import com.katebrr.pokedex.core.common.asResultWithLoading
 import com.katebrr.pokedex.data.pokemons.model.Pokemon
@@ -35,6 +36,8 @@ class PokemonListViewModel
     private val pokemonsRepository: PokemonsRepository
 ) : ViewModel() {
 
+
+    //fetching search value from Home Screen and listening to it
     private val searchArgs = SearchArgs(savedStateHandle)
     private var _search by mutableStateOf(searchArgs.search)
     var search = snapshotFlow { _search }.stateIn(
@@ -43,50 +46,85 @@ class PokemonListViewModel
         initialValue = searchArgs.search
     )
 
+    // flow of pokemons
+    private var _pokemons: MutableStateFlow<Result<List<Pokemon>>> =
+        MutableStateFlow(Result.Loading)
 
-
-
-    private var _order: PokemonOrder by mutableStateOf(
-       PokemonOrder.SORT_BY_ID_ASC)
-    var order:StateFlow<PokemonOrder> = snapshotFlow { _order}.stateIn(
+    //listening to Order Options change
+    private var _order by mutableStateOf(
+        PokemonOrder.SORT_BY_ID_ASC
+    )
+    var order: StateFlow<PokemonOrder> = snapshotFlow { _order }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(),
         initialValue = _order
     )
 
-    fun onOrderChoice(orderIndex: Int){
-        _order = PokemonOrder.values().elementAt(orderIndex)
-    }
-
-    fun onQueryChange(newQuery: String) {
-        _search = newQuery
-    }
-
-
-
-    private var _pokemons: MutableStateFlow<Result<List<Pokemon>>> =
-        MutableStateFlow(Result.Loading)
+    //listening to Filter Options change
+    private var _filterOptions by mutableStateOf(
+        FilterOptions(
+            types = typesList,
+            rangeOfHp = 0f..100f,
+            rangeOfAttack = 0f..100f,
+            rangeOfDefense = 0f..100f,
+            hasEvolution = false,
+            isInPokedex = false
+        )
+    )
+    var filterOptions = snapshotFlow { _filterOptions }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = _filterOptions
+    )
 
 
     val uiState: StateFlow<PokemonListUiState> =
         combine(
             _pokemons,
             snapshotFlow { _search },
-            snapshotFlow { _order }) { pokemons, search, order ->
-            Triple(pokemons, search, order)
-        }.flatMapLatest { pair ->
-            var result = pair.first
+            snapshotFlow { _order },
+            snapshotFlow { _filterOptions }) { pokemons, search, order, filterOptions ->
+            Triple(pokemons, search, Pair(order, filterOptions))
+        }.flatMapLatest { triple ->
+            var result = triple.first
             flow {
+                // Log.e("uiState in ViewModel","${triple.third.second.types}")
                 emit(when (result) {
                     is Result.Success -> {
-                        var pokemons = result.data.filter {
-                            it.name.contains(
-                                pair.second,
+                        val filters = triple.third.second
+                        val selectedTypes =
+                            filters.types.filter { it.selected }.map { it.name }
+                        val selectedHpRange = closedFloatingPointRangeToIntRange(filters.rangeOfHp)
+                        val selectedAttackRange =
+                            closedFloatingPointRangeToIntRange(filters.rangeOfAttack)
+                        val selectedDefenseRange =
+                            closedFloatingPointRangeToIntRange(filters.rangeOfDefense)
+                        var pokemons = result.data.filter { pokemon ->
+                            pokemon.name.contains(
+                                triple.second,
                                 ignoreCase = true
-                            )
+                            ) &&
+                                    pokemon.apiTypes.any { type ->
+                                        selectedTypes.contains(
+                                            type.name
+                                        )
+                                    }
+                                    &&
+                                    pokemon.stats.HP in selectedHpRange
+                                    &&
+                                    pokemon.stats.attack in selectedAttackRange
+                                    &&
+                                    pokemon.stats.defense in selectedDefenseRange
+                                    &&
+                                    if (filters.hasEvolution) {
+                                pokemon.apiEvolutions.isNotEmpty()
+                            } else {
+                                true
+                            }
+
                         }
-                        pokemons = pair.third.applyOrder(pokemons)
-                        Log.e("inside UI", "$pokemons")
+
+                        pokemons = triple.third.first.applyOrder(pokemons)
                         PokemonListUiState.Success(pokemons)
                     }
 
@@ -120,7 +158,59 @@ class PokemonListViewModel
         }
     }
 
+    fun onOrderChoice(orderIndex: Int) {
+        _order = PokemonOrder.values().elementAt(orderIndex)
+    }
 
+    fun onQueryChange(newQuery: String) {
+        _search = newQuery
+    }
+
+    fun onTypesChange(types: List<TypeOption>) {
+        _filterOptions = _filterOptions.copy(types = types)
+        Log.e("ViewModel FilterChange", "${types}")
+    }
+
+    fun onRangeOfHpChange(hpRange: ClosedFloatingPointRange<Float>) {
+        _filterOptions = _filterOptions.copy(rangeOfHp = hpRange)
+        Log.e("ViewModel FilterChange", " Range of Hp ${hpRange}")
+    }
+
+    fun onRangeOfAttackChange(attackRange: ClosedFloatingPointRange<Float>) {
+        _filterOptions = _filterOptions.copy(rangeOfAttack = attackRange)
+        Log.e("ViewModel FilterChange", "Range of Attack ${attackRange}")
+    }
+
+    fun onRangeOfDefenseChange(defenseRange: ClosedFloatingPointRange<Float>) {
+        _filterOptions = _filterOptions.copy(rangeOfDefense = defenseRange)
+        Log.e("ViewModel FilterChange", "Range of Defense ${defenseRange}")
+    }
+
+    fun onHasEvolutionChange(hasEvolutionValue: Boolean) {
+        _filterOptions = _filterOptions.copy(hasEvolution = hasEvolutionValue)
+    }
+
+    fun onIsInPokedexChange(isInPokedexValue: Boolean) {
+        _filterOptions = _filterOptions.copy(isInPokedex = isInPokedexValue)
+    }
+
+    fun onResetFilter(){
+
+    }
+
+    fun closedFloatingPointRangeToIntRange(range: ClosedFloatingPointRange<Float>): ClosedRange<Int> {
+        val start = range.start.toInt()
+        val endInclusive = range.endInclusive.toInt()
+
+        val resultEnd = if (endInclusive != 100) {
+            endInclusive - 1
+        } else {
+            100
+        }
+        val closedIntRange = start..resultEnd
+
+        return closedIntRange
+    }
 
 }
 
@@ -132,6 +222,59 @@ sealed interface PokemonListUiState {
 }
 
 
+val typesList = listOf<TypeOption>(
+    TypeOption("Normal", R.drawable.normal, true),
+    TypeOption("Combat", R.drawable.fighting, true),
+    TypeOption("Vol", R.drawable.flying, true),
+    TypeOption("Poison", R.drawable.poison, true),
+    TypeOption("Sol", R.drawable.ground, true),
+    TypeOption("Roche", R.drawable.rock, true),
+    TypeOption("Insecte", R.drawable.bug, true),
+    TypeOption("Spectre", R.drawable.ghost, true),
+    TypeOption("Acier", R.drawable.steel, true),
+    TypeOption("Feu", R.drawable.fire, true),
+    TypeOption("Eau", R.drawable.water, true),
+    TypeOption("Plante", R.drawable.grass, true),
+    TypeOption("Électrik", R.drawable.electric, true),
+    TypeOption("Psy", R.drawable.psychic, true),
+    TypeOption("Glace", R.drawable.ice, true),
+    TypeOption("Dragon", R.drawable.dragon, true),
+    TypeOption("Ténèbres", R.drawable.dark, true),
+    TypeOption("Fée", R.drawable.fairy, true)
+)
+
+data class TypeOption(
+    val name: String,
+    val image: Int,
+    var selected: Boolean
+)
+
+data class FilterOptions(
+    var types: List<TypeOption>,
+    var rangeOfHp: ClosedFloatingPointRange<Float>,
+    var rangeOfAttack: ClosedFloatingPointRange<Float>,
+    var rangeOfDefense: ClosedFloatingPointRange<Float>,
+    var hasEvolution: Boolean,
+    var isInPokedex: Boolean
+)
+
+
+//    fun onFilterOptionsChange(
+//        rangeOfHp: ClosedFloatingPointRange<Float>? = _filterOptions.rangeOfHp,
+//        rangeOfAttack: ClosedFloatingPointRange<Float>? = _filterOptions.rangeOfAttack,
+//        rangeOfDefense: ClosedFloatingPointRange<Float>? = _filterOptions.rangeOfDefense,
+//        hasEvolution: Boolean? = _filterOptions.hasEvolution,
+//        isInPokedex: Boolean? = _filterOptions.isInPokedex
+//    ) {
+//
+//        rangeOfHp?.let { _filterOptions.rangeOfHp = it }
+//        rangeOfAttack?.let { _filterOptions.rangeOfAttack = it }
+//        rangeOfDefense?.let { _filterOptions.rangeOfDefense = it }
+//        hasEvolution?.let { _filterOptions.hasEvolution = it }
+//        isInPokedex?.let { _filterOptions.isInPokedex = it }
+//
+//        Log.e("Filter Change Inside ViewModel", "${types}")
+//    }
 
 
 

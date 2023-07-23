@@ -9,7 +9,8 @@ data class PokemonResponse(
     val image: String,
     val sprite: String,
     val stats: PokemonStatsResponse,
-    val apiTypes: List<PokemonTypesResponse>
+    val apiTypes: List<PokemonTypesResponse>,
+    val apiEvolutions: List<EvolutionResponse>
 )
 
 @Serializable
@@ -26,4 +27,10 @@ data class PokemonStatsResponse(
 data class PokemonTypesResponse(
     val name: String,
     val image: String
+)
+
+@Serializable
+data class EvolutionResponse(
+    val name: String,
+    val pokedexId: Int
 )

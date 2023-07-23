@@ -12,4 +12,6 @@
     <string name="filter_by">Filter by:</string>
     <string name="by_type">Type</string>
     <string name="range_of_hp">Range of HP</string>
+    <string name="range_of_attack">Range of Attack</string>
+    <string name="range_of_defense">Range of Defense</string>
 </resources>
