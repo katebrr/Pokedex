@@ -30,8 +30,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Button
@@ -52,6 +53,9 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -108,7 +112,7 @@ fun PokemonListScreenRoute(
         onRangeOfDefenseChange = viewModel::onRangeOfDefenseChange,
         onHasEvolutionChange = viewModel::onHasEvolutionChange,
         onIsInPokedexChange = viewModel::onIsInPokedexChange,
-        //   onResetFilter = viewModel::onResetFilter,
+        onResetFilter = viewModel::onResetFilter,
         uiState = uiState
     )
 }
@@ -128,6 +132,7 @@ fun PokemonListScreen(
     onRangeOfDefenseChange: (ClosedFloatingPointRange<Float>) -> Unit,
     onHasEvolutionChange: (Boolean) -> Unit,
     onIsInPokedexChange: (Boolean) -> Unit,
+    onResetFilter: () -> Unit,
     uiState: PokemonListUiState,
 ) {
 
@@ -222,7 +227,8 @@ fun PokemonListScreen(
                                 onRangeOfAttackChange,
                                 onRangeOfDefenseChange,
                                 onHasEvolutionChange,
-                                onIsInPokedexChange
+                                onIsInPokedexChange,
+                                onResetFilter
                             )
                         }
 
@@ -279,11 +285,18 @@ fun PokemonItem(pokemon: Pokemon, navigateToPokemon: (String) -> Unit) {
                 loading = {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
+
             )
         },
         trailingContent = {
             IconButton(onClick = { isItemExpanded = !isItemExpanded }) {
-                Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
+                Icon(
+                    imageVector = if (!isItemExpanded) {
+                        Icons.Filled.ArrowDropDown
+                    } else {
+                        Icons.Filled.ArrowDropUp
+                    }, contentDescription = null
+                )
             }
         })
 
@@ -292,9 +305,11 @@ fun PokemonItem(pokemon: Pokemon, navigateToPokemon: (String) -> Unit) {
 
 @Composable
 fun ExpandedItem(pokemonTypes: List<PokemonTypes>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 6.dp )) {
         pokemonTypes.map { type ->
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start) {
                 SubcomposeAsyncImage(modifier = Modifier.size(24.dp),
                     model = type.image,
                     contentDescription = null,
@@ -302,7 +317,7 @@ fun ExpandedItem(pokemonTypes: List<PokemonTypes>) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 )
-                Text(text = type.name)
+                Text(text = type.name, modifier = Modifier.padding(horizontal = 4.dp))
             }
         }
     }
@@ -353,7 +368,8 @@ fun FilterMenu(
     onRangeOfAttackChange: (ClosedFloatingPointRange<Float>) -> Unit,
     onRangeOfDefenseChange: (ClosedFloatingPointRange<Float>) -> Unit,
     onHasEvolutionChange: (Boolean) -> Unit,
-    onIsInPokedexChange: (Boolean) -> Unit
+    onIsInPokedexChange: (Boolean) -> Unit,
+    onResetFilter: () -> Unit
 ) {
     ModalBottomSheet(
         onDismissRequest = { scope.launch { bottomSheetState.hide() } },
@@ -403,7 +419,12 @@ fun FilterMenu(
             }
             Spacer(modifier = Modifier.height(12.dp))
 
-            LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 84.dp)) {
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 84.dp)
+            ) {
                 item {
                     TypeOptions(
                         stringResource(R.string.by_type),
@@ -416,6 +437,7 @@ fun FilterMenu(
                             .fillMaxWidth()
                             .height(20.dp)
                     )
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
                 item {
                     FilterByRangeOf(
@@ -423,51 +445,38 @@ fun FilterMenu(
                         filters.rangeOfHp,
                         onRangeOfHpChange
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 item {
-                    Divider()
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
 
                     FilterByRangeOf(
                         stringResource(R.string.range_of_attack),
                         filters.rangeOfAttack,
                         onRangeOfAttackChange
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
+
                 item {
-                    Divider()
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
 
                     FilterByRangeOf(
                         stringResource(R.string.range_of_defense),
                         filters.rangeOfDefense,
                         onRangeOfDefenseChange
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                item {
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                    EvolutionOption(filters, onHasEvolutionChange)
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
                 item {
-                    Divider()
-
-                    Button(
-                        onClick = {
-                            scope.launch { /*TODO RESET FILTER*/ }
-                        },
-                        modifier = Modifier,
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.LightGray.copy(alpha = 0.3f),
-                            contentColor = MaterialTheme.colorScheme.primary
-                        ),
-                        contentPadding = PaddingValues(4.dp)
-                    ) {
-                        Text(text = "Reset")
-                        Icon(
-                            Icons.Default.DeleteForever,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
+                    ResetOption(onResetFilter)
                 }
             }
 
@@ -534,9 +543,9 @@ fun TypeOptions(
                     chosenTypes = types.map { it.copy(selected = true) }
                 }
 
-              //  Log.e("Before Type Selected", "${types}")
+                //  Log.e("Before Type Selected", "${types}")
                 onTypesFilterChange(chosenTypes)
-               // Log.e("After Type Selected", "${chosenTypes}")
+                // Log.e("After Type Selected", "${chosenTypes}")
             }
         }
 
@@ -556,7 +565,7 @@ fun TypeOptionItem(item: TypeOption, onTypeChange: () -> Unit) {
                 if (!item.selected) {
                     MaterialTheme.colorScheme.background
                 } else {
-                    MaterialTheme.colorScheme.outlineVariant.copy(0.2f)
+                    MaterialTheme.colorScheme.surfaceVariant.copy(0.2f)
                 },
                 shape = RoundedCornerShape(10.dp)
             )
@@ -564,7 +573,7 @@ fun TypeOptionItem(item: TypeOption, onTypeChange: () -> Unit) {
             .border(
                 1.dp,
                 if (!item.selected) {
-                    MaterialTheme.colorScheme.outlineVariant
+                    MaterialTheme.colorScheme.surfaceVariant
                 } else {
                     MaterialTheme.colorScheme.primary
                 },
@@ -597,7 +606,13 @@ fun FilterByRangeOf(
                 .padding(8.dp),
             value = sliderPosition,
             onValueChange = { onSliderValueChange(it) },
+
             valueRange = 0f..160f,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.secondary,
+                activeTrackColor = MaterialTheme.colorScheme.secondary,
+                inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer
+            )
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
@@ -613,7 +628,53 @@ fun FilterByRangeOf(
 }
 
 @Composable
-fun EvolutionOption() {
+fun EvolutionOption(
+    filters: FilterOptions,
+    onHasEvolutionChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "Has Evolution:",
+            modifier = Modifier
+                .paddingFromBaseline(top = 32.dp, bottom = 16.dp),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Normal
+        )
+
+        val icon: (@Composable () -> Unit)? = if (filters.hasEvolution) {
+            {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        }
+        Switch(
+            checked = filters.hasEvolution,
+            onCheckedChange = onHasEvolutionChange,
+            thumbContent = icon,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                checkedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                checkedBorderColor = MaterialTheme.colorScheme.secondaryContainer,
+                checkedIconColor = MaterialTheme.colorScheme.background,
+                uncheckedThumbColor = MaterialTheme.colorScheme.secondaryContainer,
+                uncheckedTrackColor = MaterialTheme.colorScheme.background,
+                uncheckedBorderColor = MaterialTheme.colorScheme.secondaryContainer
+
+            )
+        )
+    }
+
 
 }
 
@@ -621,3 +682,41 @@ fun EvolutionOption() {
 fun PokedexOption() {
 
 }
+
+@Composable
+fun ResetOption(
+    onResetFilter: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Button(
+            onClick = { onResetFilter() },
+            modifier = Modifier.size(width = 180.dp, height = 50.dp),
+            shape = RoundedCornerShape(40.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            ),
+            contentPadding = PaddingValues(4.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Reset",
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+        }
+    }
+
+}
+
