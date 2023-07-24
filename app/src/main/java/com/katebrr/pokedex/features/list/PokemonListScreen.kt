@@ -1,6 +1,5 @@
 package com.katebrr.pokedex.features.list
 
-import android.util.Log
 import android.widget.Toast.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -535,9 +534,9 @@ fun TypeOptions(
                     chosenTypes = types.map { it.copy(selected = true) }
                 }
 
-                Log.e("Before Type Selected", "${types}")
+              //  Log.e("Before Type Selected", "${types}")
                 onTypesFilterChange(chosenTypes)
-                Log.e("After Type Selected", "${chosenTypes}")
+               // Log.e("After Type Selected", "${chosenTypes}")
             }
         }
 
@@ -590,7 +589,6 @@ fun FilterByRangeOf(
     Column(
         Modifier
             .fillMaxWidth()
-//            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
             .padding(8.dp)
     ) {
         RangeSlider(
@@ -599,7 +597,7 @@ fun FilterByRangeOf(
                 .padding(8.dp),
             value = sliderPosition,
             onValueChange = { onSliderValueChange(it) },
-            valueRange = 0f..100f,
+            valueRange = 0f..160f,
         )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
@@ -623,16 +621,3 @@ fun EvolutionOption() {
 fun PokedexOption() {
 
 }
-
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewBottomSheet() {
-//    PokedexTheme {
-//        FilterMenu(
-//            scope = rememberCoroutineScope(),
-//            bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.Expanded)
-//        )
-//    }
-//}

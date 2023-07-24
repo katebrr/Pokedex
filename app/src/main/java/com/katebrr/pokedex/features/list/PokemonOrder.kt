@@ -1,17 +1,36 @@
 package com.katebrr.pokedex.features.list
 
 import com.katebrr.pokedex.data.pokemons.model.Pokemon
+import java.text.Collator
+import java.text.Normalizer
+import java.util.Locale
 
 
 enum class PokemonOrder {
+
     SORT_BY_NAME_ASC {
         override fun applyOrder(pokemonList: List<Pokemon>): List<Pokemon> {
-            return pokemonList.sortedBy { it.name }
+
+            val collator = Collator.getInstance(Locale.FRENCH)
+            collator.strength = Collator.PRIMARY
+            return pokemonList.sortedWith(compareBy(collator) {
+                Normalizer.normalize(it.name, Normalizer.Form.NFD)
+                    .replace("\\p{M}".toRegex(), "")
+            })
+
+           // return pokemonList.sortedBy { it.name }
         }
     },
     SORT_BY_NAME_DESC {
         override fun applyOrder(pokemonList: List<Pokemon>): List<Pokemon> {
-            return pokemonList.sortedByDescending { it.name }
+
+            val collator = Collator.getInstance(Locale.FRENCH)
+            collator.strength = Collator.PRIMARY
+            return pokemonList.sortedWith(compareByDescending(collator) {
+                Normalizer.normalize(it.name, Normalizer.Form.NFD)
+                    .replace("\\p{M}".toRegex(), "")
+            })
+          //  return pokemonList.sortedByDescending { it.name }
         }
     },
 

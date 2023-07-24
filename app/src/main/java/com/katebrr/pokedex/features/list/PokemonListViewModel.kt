@@ -1,6 +1,5 @@
 package com.katebrr.pokedex.features.list
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,14 +18,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 
 @HiltViewModel
@@ -64,9 +62,9 @@ class PokemonListViewModel
     private var _filterOptions by mutableStateOf(
         FilterOptions(
             types = typesList,
-            rangeOfHp = 0f..100f,
-            rangeOfAttack = 0f..100f,
-            rangeOfDefense = 0f..100f,
+            rangeOfHp = 0f..160f,
+            rangeOfAttack = 0f..160f,
+            rangeOfDefense = 0f..160f,
             hasEvolution = false,
             isInPokedex = false
         )
@@ -168,22 +166,18 @@ class PokemonListViewModel
 
     fun onTypesChange(types: List<TypeOption>) {
         _filterOptions = _filterOptions.copy(types = types)
-        Log.e("ViewModel FilterChange", "${types}")
     }
 
     fun onRangeOfHpChange(hpRange: ClosedFloatingPointRange<Float>) {
         _filterOptions = _filterOptions.copy(rangeOfHp = hpRange)
-        Log.e("ViewModel FilterChange", " Range of Hp ${hpRange}")
     }
 
     fun onRangeOfAttackChange(attackRange: ClosedFloatingPointRange<Float>) {
         _filterOptions = _filterOptions.copy(rangeOfAttack = attackRange)
-        Log.e("ViewModel FilterChange", "Range of Attack ${attackRange}")
     }
 
     fun onRangeOfDefenseChange(defenseRange: ClosedFloatingPointRange<Float>) {
         _filterOptions = _filterOptions.copy(rangeOfDefense = defenseRange)
-        Log.e("ViewModel FilterChange", "Range of Defense ${defenseRange}")
     }
 
     fun onHasEvolutionChange(hasEvolutionValue: Boolean) {
@@ -195,19 +189,21 @@ class PokemonListViewModel
     }
 
     fun onResetFilter(){
-
+        _filterOptions = _filterOptions.copy(
+            types = typesList,
+            rangeOfHp = 0f..160f,
+            rangeOfAttack = 0f..160f,
+            rangeOfDefense = 0f..160f,
+            hasEvolution = false,
+            isInPokedex = false
+        )
     }
 
     fun closedFloatingPointRangeToIntRange(range: ClosedFloatingPointRange<Float>): ClosedRange<Int> {
-        val start = range.start.toInt()
-        val endInclusive = range.endInclusive.toInt()
+        val start = range.start.roundToInt()
+        val end = range.endInclusive.roundToInt()
 
-        val resultEnd = if (endInclusive != 100) {
-            endInclusive - 1
-        } else {
-            100
-        }
-        val closedIntRange = start..resultEnd
+        val closedIntRange = start..end
 
         return closedIntRange
     }
