@@ -4,28 +4,6 @@
       <PhysicalDevice>
         <key>
           <Key>
-            <type value="SERIAL_NUMBER" />
-            <value value="RF8MA1M0FAP" />
-          </Key>
-        </key>
-        <name value="samsung SM-G970F" />
-        <target value="Android 12.0" />
-        <api value="androidversion:31:null:null:true" />
-      </PhysicalDevice>
-      <PhysicalDevice>
-        <key>
-          <Key>
-            <type value="DOMAIN_NAME" />
-            <value value="adb-RF8MA1M0FAP-vl27zr._adb-tls-connect._tcp." />
-          </Key>
-        </key>
-        <name value="samsung SM-G970F" />
-        <target value="Android 12.0" />
-        <api value="androidversion:31:null:null:true" />
-      </PhysicalDevice>
-      <PhysicalDevice>
-        <key>
-          <Key>
             <type value="DOMAIN_NAME" />
             <value value="adb-33005a99aa86a3af-mNS5me._adb-tls-connect._tcp." />
           </Key>
@@ -33,6 +11,17 @@
         <name value="samsung SM-A510F" />
         <target value="Android 12L" />
         <api value="androidversion:32:null:null:true" />
+      </PhysicalDevice>
+      <PhysicalDevice>
+        <key>
+          <Key>
+            <type value="SERIAL_NUMBER" />
+            <value value="RF8MA1M0FAP" />
+          </Key>
+        </key>
+        <name value="samsung SM-G970F" />
+        <target value="Android 12.0" />
+        <api value="androidversion:31:null:null:true" />
       </PhysicalDevice>
     </physicalDevices>
   </component>
