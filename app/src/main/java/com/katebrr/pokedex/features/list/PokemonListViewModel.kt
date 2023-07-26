@@ -52,11 +52,11 @@ class PokemonListViewModel
     private var _order by mutableStateOf(
         PokemonOrder.SORT_BY_ID_ASC
     )
-    var order: StateFlow<PokemonOrder> = snapshotFlow { _order }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(),
-        initialValue = _order
-    )
+//    var order: StateFlow<PokemonOrder> = snapshotFlow { _order }.stateIn(
+//        scope = viewModelScope,
+//        started = SharingStarted.WhileSubscribed(),
+//        initialValue = _order
+//    )
 
     //listening to Filter Options change
     private var _filterOptions by mutableStateOf(
@@ -115,10 +115,10 @@ class PokemonListViewModel
                                     pokemon.stats.defense in selectedDefenseRange
                                     &&
                                     if (filters.hasEvolution) {
-                                pokemon.apiEvolutions.isNotEmpty()
-                            } else {
-                                true
-                            }
+                                        pokemon.apiEvolutions.isNotEmpty()
+                                    } else {
+                                        true
+                                    }
 
                         }
 
@@ -188,7 +188,7 @@ class PokemonListViewModel
         _filterOptions = _filterOptions.copy(isInPokedex = isInPokedexValue)
     }
 
-    fun onResetFilter(){
+    fun onResetFilter() {
         _filterOptions = _filterOptions.copy(
             types = typesList,
             rangeOfHp = 0f..160f,

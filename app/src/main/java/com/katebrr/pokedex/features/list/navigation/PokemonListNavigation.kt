@@ -16,8 +16,6 @@ class SearchArgs(val search: String) {
             this(checkNotNull(savedStateHandle[searchArgs]) as String)
 }
 
-
-
 fun NavController.navigateToPokemons(search: String = "") {
     this.navigate("$pokemonListRoute?$searchArgs=$search")
 }

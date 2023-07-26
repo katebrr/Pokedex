@@ -115,6 +115,7 @@ fun PokemonListScreenRoute(
         onResetFilter = viewModel::onResetFilter,
         uiState = uiState
     )
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -640,7 +641,7 @@ fun EvolutionOption(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Has Evolution:",
+            text = stringResource(R.string.has_evolution_filter),
             modifier = Modifier
                 .paddingFromBaseline(top = 32.dp, bottom = 16.dp),
             style = MaterialTheme.typography.titleLarge,
@@ -709,7 +710,7 @@ fun ResetOption(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Reset",
+                    text = stringResource(R.string.reset),
                     fontWeight = FontWeight.SemiBold,
                     style = MaterialTheme.typography.bodyLarge
                 )

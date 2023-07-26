@@ -11,24 +11,34 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.SubcomposeAsyncImage
+import com.katebrr.pokedex.ui.components.LoadingView
 
 @Composable
 fun PokemonDetailScreenRoute(
     pokemonId: String,
     onBackClick: () -> Unit,
     viewModel: PokemonDetailViewModel = hiltViewModel()
-){
-  PokemonDetailScreen(pokemonId, onBackClick)
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    PokemonDetailScreen(
+        pokemonId = pokemonId,
+        onBackClick = onBackClick,
+        uiState = uiState
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonDetailScreen(
     pokemonId: String,
-    onBackClick: () -> Unit
-){
+    onBackClick: () -> Unit,
+    uiState: PokemonUiState
+) {
     Scaffold(modifier = Modifier,
         topBar = {
             TopAppBar(
@@ -43,11 +53,25 @@ fun PokemonDetailScreen(
                 })
         }) { padding ->
         Column(Modifier.padding(padding)) {
-            Text(text = pokemonId)
+            when (uiState) {
+                is PokemonUiState.Loading -> {
+                    LoadingView()
+                }
+
+                is PokemonUiState.Error -> {
+                    Text(text = "error")
+                }
+
+                is PokemonUiState.Success -> {
+                    SubcomposeAsyncImage(model = uiState.pokemon.sprite, contentDescription =null ) {
+
+                    }
+                    Text(text = uiState.pokemon.name)
+                }
         }
 
 
-    }
+    }}
 
 
 }

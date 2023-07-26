@@ -6,6 +6,6 @@ import com.katebrr.pokedex.core.network.model.PokemonResponse
 
 interface IPokemonApi {
     suspend fun getPokemons(): List<PokemonResponse>
-    suspend fun getPokemon() : PokemonDetailResponse
+    suspend fun getPokemon(id: Int) : PokemonDetailResponse
 
 }

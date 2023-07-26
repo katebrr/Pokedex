@@ -14,4 +14,6 @@
     <string name="range_of_hp">Range of HP</string>
     <string name="range_of_attack">Range of Attack</string>
     <string name="range_of_defense">Range of Defense</string>
+    <string name="reset">Reset</string>
+    <string name="has_evolution_filter">Has Evolution:</string>
 </resources>
