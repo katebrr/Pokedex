@@ -6,6 +6,7 @@ import android.util.Log
 import com.katebrr.pokedex.core.network.IPokemonApi
 import com.katebrr.pokedex.core.network.model.EvolutionResponse
 import com.katebrr.pokedex.core.network.model.PokemonDetailResponse
+import com.katebrr.pokedex.core.network.model.PokemonPreEvolutionResponse
 
 import com.katebrr.pokedex.core.network.model.PokemonResistancesResponse
 import com.katebrr.pokedex.core.network.model.PokemonResponse
@@ -169,7 +170,7 @@ class PokemonApi @Inject constructor() : IPokemonApi {
                     name = "Herbizarre",
                     pokedexId = 2
                 )),
-             //   apiPreEvolution = PokemonPreEvolutionResponse.PokemonPreEvolutionString("none")
+                apiPreEvolution = "none"
             )
         }
     }

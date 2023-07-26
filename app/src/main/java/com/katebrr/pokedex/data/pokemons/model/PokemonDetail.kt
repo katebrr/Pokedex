@@ -3,6 +3,8 @@ package com.katebrr.pokedex.data.pokemons.model
 
 //import com.katebrr.pokedex.core.network.model.PokemonPreEvolutionResponse
 import com.katebrr.pokedex.core.network.model.PokemonDetailResponse
+import com.katebrr.pokedex.core.network.model.PokemonDetailResponseAbs
+import com.katebrr.pokedex.core.network.model.PokemonPreEvolutionResponse
 import com.katebrr.pokedex.core.network.model.PokemonResistancesResponse
 
 
@@ -16,13 +18,13 @@ data class PokemonDetail(
     val apiGeneration: Int,
     val apiEvolutions: List<Evolution>,
     val apiResistances: List<Resistance>,
-  //  val apiPreEvolution: PreEvolution
+    val apiPreEvolution: PreEvolution? = null
 )
 //
-//sealed class PreEvolution {
-//    data class PreEvolutionClass(val name: String, val pokedexId: Int) : PreEvolution()
-//    data class PreEvolutionString(val noEvolution: String) : PreEvolution()
-//}
+sealed class PreEvolution {
+    data class PreEvolutionClass(val name: String, val pokedexId: Int) : PreEvolution()
+    data class PreEvolutionString(val noEvolution: String) : PreEvolution()
+}
 
 data class Resistance(
     val name: String,
@@ -30,19 +32,8 @@ data class Resistance(
     val damageRelation: String
 )
 
-fun PokemonDetailResponse.toDataModel(): PokemonDetail  {
-//    val preEvolution = when (val apiPreEvolution = apiPreEvolution) {
-//        is PokemonPreEvolutionResponse.PokemonPreEvolutionDataClass -> PreEvolution.PreEvolutionClass(
-//            apiPreEvolution.name,
-//            apiPreEvolution.pokedexId
-//        )
-//
-//        is PokemonPreEvolutionResponse.PokemonPreEvolutionString -> PreEvolution.PreEvolutionString(
-//            apiPreEvolution.noEvolution
-//        )
-//
-//        else -> throw IllegalArgumentException("Unknown ApiPreEvolution type")
-//    }
+fun PokemonDetailResponseAbs.toDataModel(): PokemonDetail  {
+
    return PokemonDetail(
         id = id,
         name = name,
@@ -53,7 +44,7 @@ fun PokemonDetailResponse.toDataModel(): PokemonDetail  {
         apiGeneration = apiGeneration,
         apiEvolutions = apiEvolutions.map { it.toDataModel() },
         apiResistances = apiResistances.map { it.toDataModel() },
-     //   apiPreEvolution = preEvolution
+        apiPreEvolution = apiPreEvolution.let { if (it is PokemonPreEvolutionResponse) it.toDataModel() else null}
     )
 }
 fun PokemonResistancesResponse.toDataModel() = Resistance(
@@ -65,5 +56,5 @@ fun PokemonResistancesResponse.toDataModel() = Resistance(
 //fun PokemonPreEvolutionResponse.PokemonPreEvolutionString.toDataModel() =
 //    PreEvolution.PreEvolutionString(noEvolution = noEvolution)
 //
-//fun PokemonPreEvolutionResponse.PokemonPreEvolutionDataClass.toDataModel() =
-//    PreEvolution.PreEvolutionClass(name = name, pokedexId = pokedexId)
+fun PokemonPreEvolutionResponse.toDataModel() =
+    PreEvolution.PreEvolutionClass(name = name, pokedexId = pokedexId)
