@@ -2,35 +2,32 @@ package com.katebrr.pokedex.features.pokemon
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
-import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
+
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFrom
+
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Android
+
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Attractions
-import androidx.compose.material.icons.filled.FamilyRestroom
-import androidx.compose.material.icons.filled.Info
+
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,12 +39,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material.TabRow
-import androidx.compose.material.icons.outlined.Android
-import androidx.compose.material.icons.outlined.LocalPolice
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.Speed
+
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -63,12 +57,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
+
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 
 
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -81,13 +74,12 @@ import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.katebrr.pokedex.R
 import com.katebrr.pokedex.data.pokemons.model.PokemonDetail
-import com.katebrr.pokedex.data.pokemons.model.PokemonStats
-import io.ktor.util.reflect.instanceOf
+import com.katebrr.pokedex.ui.utils.typeToColor
+
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
-import kotlin.coroutines.CoroutineContext
 
 
 @Composable
@@ -183,7 +175,7 @@ fun PokemonDetailScaffold(
                             bottomStart = 0.dp,
                             bottomEnd = 0.dp
                         ),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
                     ) {
                         PokemonTabBar(pokemon)
                     }
@@ -250,14 +242,14 @@ fun PokemonTopBar(
 
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class)
 
 @Composable
 fun PokemonTabBar(
     pokemon: PokemonDetail
 ) {
     var tabSelected by rememberSaveable {
-        mutableStateOf(0)
+        mutableStateOf(2)
     }
     val tabs = listOf("Info", "Genetics", "Attacks")
     var pagerState = rememberPagerState()
@@ -265,8 +257,8 @@ fun PokemonTabBar(
     Column {
         TabRow(
             selectedTabIndex = pagerState.currentPage,
-            backgroundColor = Color.White,
-            contentColor = MaterialTheme.colorScheme.onSurface,
+            backgroundColor =  MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
             indicator = { tabPositions -> // 3.
                 TabRowDefaults.Indicator(
                     Modifier.pagerTabIndicatorOffset(
@@ -321,20 +313,42 @@ fun PokemonTabBar(
 @Composable
 fun InfoScreen(pokemon: PokemonDetail) {
     val pokStats = pokemon.stats
-    val total = pokStats.HP + pokStats.attack + pokStats.defense + pokStats.specialAttack + pokStats.specialDefense + pokStats.speed
+    val total =
+        pokStats.HP + pokStats.attack + pokStats.defense + pokStats.specialAttack + pokStats.specialDefense + pokStats.speed
     Column(
         Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        StatsItem(statName = "HP", stat = pokStats.HP, painterResource(id = R.drawable.ecg_heart) )
-        StatsItem(statName = "Attack", stat = pokStats.attack,  painterResource(id = R.drawable.swords))
-        StatsItem(statName = "Defense", stat = pokStats.defense, painterResource(id = R.drawable.shield))
-        StatsItem(statName = "SP Attack", stat = pokStats.specialAttack, painterResource(id = R.drawable.sword_rose))
-        StatsItem(statName = "SP Defense", stat = pokStats.specialDefense, painterResource(id = R.drawable.local_police))
+        StatsItem(statName = "HP", stat = pokStats.HP, painterResource(id = R.drawable.ecg_heart))
+        StatsItem(
+            statName = "Attack",
+            stat = pokStats.attack,
+            painterResource(id = R.drawable.swords)
+        )
+        StatsItem(
+            statName = "SP Attack",
+            stat = pokStats.specialAttack,
+            painterResource(id = R.drawable.sword_rose)
+        )
+        StatsItem(
+            statName = "Defense",
+            stat = pokStats.defense,
+            painterResource(id = R.drawable.shield)
+        )
+        StatsItem(
+            statName = "SP Defense",
+            stat = pokStats.specialDefense,
+            painterResource(id = R.drawable.local_police)
+        )
         StatsItem(statName = "Speed", stat = pokStats.speed, painterResource(id = R.drawable.speed))
-        Divider(Modifier.padding(vertical = 10.dp))
-        StatsItem(statName = "Total", stat = total, icon = painterResource(id = R.drawable.android), rangeMax = 680)
+        Divider(Modifier.padding(vertical = 14.dp))
+        StatsItem(
+            statName = "Total",
+            stat = total,
+            icon = painterResource(id = R.drawable.android),
+            rangeMax = 680
+        )
 
 
     }
@@ -360,14 +374,13 @@ fun StatsItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Icon(icon , contentDescription = null, Modifier.size(24.dp))
+            Icon(icon, contentDescription = null, Modifier.size(24.dp))
             Text(
                 text = statName,
                 modifier = Modifier
                     .width(160.dp)
                     .padding(start = 4.dp),
                 color = Color.Gray,
-               // fontWeight = FontWeight.SemiBold,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -390,7 +403,7 @@ fun StatsItem(
                 modifier = Modifier
                     .width(300.dp)
                     .padding(start = 8.dp),
-                color = if (stat < rangeMax/2) MaterialTheme.colorScheme.primary else Color.hsl(
+                color = if (stat < rangeMax / 2) MaterialTheme.colorScheme.primary else Color.hsl(
                     149f,
                     0.871f,
                     0.316f
@@ -418,12 +431,97 @@ fun GeneticsScreen(pokemon: PokemonDetail) {
 
 @Composable
 fun AttacksScreen(pokemon: PokemonDetail) {
+
+    val doubleDamages = pokemon.apiResistances.filter { it.damageMultiplier == 4.0 }.map { it.name }
+    val damages = pokemon.apiResistances.filter { it.damageMultiplier == 2.0 }.map { it.name }
+    val immune = pokemon.apiResistances.filter { it.damageMultiplier == 1.0 }.map { it.name }
+    val resistant = pokemon.apiResistances.filter { it.damageMultiplier == 0.5 }.map { it.name }
+    val doubleResistant =
+        pokemon.apiResistances.filter { it.damageMultiplier == 0.25 }.map { it.name }
+
+
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color.Green)
+            .background( MaterialTheme.colorScheme.background),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Difefriojhfn tHINGS")
+        Text(
+            text = "Weaknesses",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(16.dp),
+            textAlign = TextAlign.Center
+        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            if (doubleDamages.isNotEmpty()) {
+                AttacksScreenItem(pokemonResistance = "4X", pokemonAttack = doubleDamages)
+            }
+            if (damages.isNotEmpty()) {
+                AttacksScreenItem(pokemonResistance = "2X", pokemonAttack = damages)
+            }
+        }
+
+        Text(
+            text = "Immune",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(16.dp),
+            textAlign = TextAlign.Center
+        )
+        Row {
+            if (immune.isNotEmpty()) {
+                AttacksScreenItem(pokemonResistance = "Ø", pokemonAttack = immune)
+            }
+        }
+        Text(
+            text = "Resistances",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(16.dp),
+            textAlign = TextAlign.Center
+        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            if (resistant.isNotEmpty()) {
+                AttacksScreenItem(pokemonResistance = "0.5X", pokemonAttack = resistant)
+            }
+            if (doubleResistant.isNotEmpty()) {
+                AttacksScreenItem(pokemonResistance = "0.25X", pokemonAttack = doubleResistant)
+            }
+        }
+
+    }
+
+
+}
+
+
+@Composable
+fun AttacksScreenItem(pokemonResistance: String, pokemonAttack: List<String>) {
+
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start) {
+        Text(
+            text = pokemonResistance,
+            modifier = Modifier
+                .width(64.dp)
+                .padding(8.dp),
+            textAlign = TextAlign.Center
+        )
+        LazyRow() {
+            items(pokemonAttack) { attack ->
+                Card(
+                    modifier = Modifier.padding(4.dp).width(100.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = attack.typeToColor().copy(alpha = 0.7f),
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(48.dp)
+                ) {
+                    Text(attack, textAlign = TextAlign.Center, modifier = Modifier.padding(8.dp).fillMaxWidth())
+                }
+            }
+
+        }
     }
 }
 
