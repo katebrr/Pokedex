@@ -1,33 +1,31 @@
 package com.katebrr.pokedex.features.pokemon
 
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-
-
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-
-
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.TabRow
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.filled.ArrowBack
-
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,10 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
-import androidx.compose.material.TabRow
-
 import androidx.compose.material3.TabRowDefaults
-
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -55,17 +50,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-
-
 import androidx.hilt.navigation.compose.hiltViewModel
-
 import androidx.palette.graphics.Palette
 import coil.compose.SubcomposeAsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -74,39 +66,32 @@ import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.katebrr.pokedex.R
 import com.katebrr.pokedex.data.pokemons.model.PokemonDetail
+import com.katebrr.pokedex.ui.components.Explosion
+import com.katebrr.pokedex.ui.utils.randomTillZero
 import com.katebrr.pokedex.ui.utils.typeToColor
-
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
 import java.net.URL
 
 
 @Composable
 fun PokemonDetailScreenRoute(
-    pokemonId: String,
-    onBackClick: () -> Unit,
-    viewModel: PokemonDetailViewModel = hiltViewModel()
+    pokemonId: String, onBackClick: () -> Unit, viewModel: PokemonDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     PokemonDetailScreen(
-        pokemonId = pokemonId,
-        onBackClick = onBackClick,
-        uiState = uiState
+        pokemonId = pokemonId, onBackClick = onBackClick, uiState = uiState
     )
 }
 
 @Composable
 fun PokemonDetailScreen(
-    pokemonId: String,
-    onBackClick: () -> Unit,
-    uiState: PokemonUiState
+    pokemonId: String, onBackClick: () -> Unit, uiState: PokemonUiState
 ) {
 
-
     Column(
-        Modifier
-            .fillMaxSize(),
+        Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -126,13 +111,18 @@ fun PokemonDetailScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PokemonDetailScaffold(
-    pokemon: PokemonDetail,
-    onBackClick: () -> Unit
+    pokemon: PokemonDetail, onBackClick: () -> Unit
 ) {
     var bgColor by remember { mutableStateOf(Color(0)) }
+    var isCaptured by remember { mutableStateOf(false) }
+    val captureAnimationProgress by animateFloatAsState(
+        targetValue = if (isCaptured) 1f else 0f,
+        animationSpec = tween(durationMillis = 8000),
+        label = "animate the capture of a pokemon"
+    )
 
     LaunchedEffect(Unit) {
         // Call the suspended function from a coroutine scope
@@ -148,9 +138,16 @@ fun PokemonDetailScaffold(
         } ?: Color(0)
     }
 
-    Scaffold(
-        modifier = Modifier,
-        topBar = { PokemonTopBar(pokemon, bgColor, onBackClick) }
+    Scaffold(modifier = Modifier,
+        topBar = {
+            PokemonTopBar(
+                pokemon,
+                bgColor,
+                onBackClick,
+                onCaptureClick = { isCaptured = true },
+                captureProgress = captureAnimationProgress
+            )
+        }
     ) { padding ->
         Column(
             Modifier
@@ -165,15 +162,11 @@ fun PokemonDetailScaffold(
                             .fillMaxWidth()
                             .height(270.dp)
                             .background(Color.Transparent)
-                    ) {
-                    }
+                    ) {}
                     Card(
                         modifier = Modifier.fillMaxSize(),
                         shape = RoundedCornerShape(
-                            topStart = 30.dp,
-                            topEnd = 30.dp,
-                            bottomStart = 0.dp,
-                            bottomEnd = 0.dp
+                            topStart = 30.dp, topEnd = 30.dp, bottomStart = 0.dp, bottomEnd = 0.dp
                         ),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
                     ) {
@@ -185,13 +178,15 @@ fun PokemonDetailScaffold(
                     model = pokemon.image,
                     contentDescription = pokemon.name,
                     modifier = Modifier
-                        .height(250.dp)
+                        .height(if (captureAnimationProgress > 0.9f || captureAnimationProgress < 0.1f) 250.dp else (captureAnimationProgress.randomTillZero()*20).dp+250.dp)
                         .fillMaxSize()
-                        .offset(y = -200.dp)
+                        .offset(y = (-200).dp)
+                )
+                Explosion(
+                    progress = captureAnimationProgress,
+                    modifier = Modifier.offset(y = (-200).dp)
                 )
             }
-
-
         }
 
     }
@@ -204,7 +199,9 @@ fun PokemonDetailScaffold(
 fun PokemonTopBar(
     pokemon: PokemonDetail,
     bgColor: Color,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onCaptureClick: () -> Unit,
+    captureProgress: Float
 ) {
     TopAppBar(
         title = {
@@ -221,23 +218,51 @@ fun PokemonTopBar(
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
-        },
-        modifier = Modifier
+        }, modifier = Modifier
             .fillMaxWidth()
-            .background(bgColor),
-        navigationIcon = {
+            .background(bgColor), navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Return to poke;on list"
                 )
             }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
+        }, colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent,
             navigationIconContentColor = Color.White,
             titleContentColor = Color.White
-        )
+        ),
+        actions = {
+            IconButton(onClick = { /*TODO*/ }, enabled = captureProgress != 1f) {
+                Icon(
+                    painterResource(id = R.drawable.pokedex_icon),
+                    contentDescription = "add to pokedex",
+                )
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = null,
+                    modifier = Modifier.rotate(captureProgress * 360),
+                    tint = Color(
+                        alpha = (Color.White.alpha * (captureProgress)).coerceAtMost(1f),
+                        red = (Color.White.red * (captureProgress)).coerceAtMost(1f),
+                        green = (Color.White.green * (captureProgress)).coerceAtMost(1f),
+                        blue = (Color.White.blue * (captureProgress)).coerceAtMost(1f)
+                    )
+                )
+            }
+            IconButton(onClick = onCaptureClick) {
+                Icon(
+                    painterResource(id = R.drawable.pokeball_icon),
+                    modifier = Modifier.rotate(-(captureProgress * 360)),
+                    contentDescription = "capture pokemon",
+                    tint = Color(
+                        red = (Color.White.red * (1 - captureProgress)).coerceAtMost(1f),
+                        green = (Color.White.green * (1 - captureProgress)).coerceAtMost(1f),
+                        blue = (Color.White.blue * (1 - captureProgress)).coerceAtMost(1f)
+                    )
+                )
+            }
+        }
     )
 
 }
@@ -255,15 +280,13 @@ fun PokemonTabBar(
     var pagerState = rememberPagerState()
 
     Column {
-        TabRow(
-            selectedTabIndex = pagerState.currentPage,
-            backgroundColor =  MaterialTheme.colorScheme.background,
+        TabRow(selectedTabIndex = pagerState.currentPage,
+            backgroundColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
             indicator = { tabPositions -> // 3.
                 TabRowDefaults.Indicator(
                     Modifier.pagerTabIndicatorOffset(
-                        pagerState,
-                        tabPositions
+                        pagerState, tabPositions
                     )
                 )
             },
@@ -288,13 +311,11 @@ fun PokemonTabBar(
                     selected = pagerState.currentPage == index,
                     selectedContentColor = Color.DarkGray,
                     unselectedContentColor = Color.LightGray,
-                    onClick = { tabSelected = index }
-                )
+                    onClick = { tabSelected = index })
             }
         }
         HorizontalPager(
-            count = 3,
-            state = pagerState
+            count = 3, state = pagerState
         ) { tabIndexPager ->
 //            tabIndex = tabIndexPager
 //            Log.e("horizontal pager", "${tabIndex} @ ${tabIndexPager}")
@@ -322,9 +343,7 @@ fun InfoScreen(pokemon: PokemonDetail) {
     ) {
         StatsItem(statName = "HP", stat = pokStats.HP, painterResource(id = R.drawable.ecg_heart))
         StatsItem(
-            statName = "Attack",
-            stat = pokStats.attack,
-            painterResource(id = R.drawable.swords)
+            statName = "Attack", stat = pokStats.attack, painterResource(id = R.drawable.swords)
         )
         StatsItem(
             statName = "SP Attack",
@@ -332,9 +351,7 @@ fun InfoScreen(pokemon: PokemonDetail) {
             painterResource(id = R.drawable.sword_rose)
         )
         StatsItem(
-            statName = "Defense",
-            stat = pokStats.defense,
-            painterResource(id = R.drawable.shield)
+            statName = "Defense", stat = pokStats.defense, painterResource(id = R.drawable.shield)
         )
         StatsItem(
             statName = "SP Defense",
@@ -356,10 +373,7 @@ fun InfoScreen(pokemon: PokemonDetail) {
 
 @Composable
 fun StatsItem(
-    statName: String,
-    stat: Int,
-    icon: Painter,
-    rangeMax: Int = 160
+    statName: String, stat: Int, icon: Painter, rangeMax: Int = 160
 ) {
     Row(
         Modifier
@@ -387,7 +401,8 @@ fun StatsItem(
 
 
         Row(
-            modifier = Modifier.fillMaxWidth(0.9f), verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(0.9f),
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
             Text(
@@ -404,9 +419,7 @@ fun StatsItem(
                     .width(300.dp)
                     .padding(start = 8.dp),
                 color = if (stat < rangeMax / 2) MaterialTheme.colorScheme.primary else Color.hsl(
-                    149f,
-                    0.871f,
-                    0.316f
+                    149f, 0.871f, 0.316f
                 ),
                 backgroundColor = Color.LightGray
             )
@@ -443,7 +456,7 @@ fun AttacksScreen(pokemon: PokemonDetail) {
     Column(
         Modifier
             .fillMaxSize()
-            .background( MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -489,10 +502,7 @@ fun AttacksScreen(pokemon: PokemonDetail) {
                 AttacksScreenItem(pokemonResistance = "0.25X", pokemonAttack = doubleResistant)
             }
         }
-
     }
-
-
 }
 
 
@@ -510,14 +520,22 @@ fun AttacksScreenItem(pokemonResistance: String, pokemonAttack: List<String>) {
         LazyRow() {
             items(pokemonAttack) { attack ->
                 Card(
-                    modifier = Modifier.padding(4.dp).width(100.dp),
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .width(100.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = attack.typeToColor().copy(alpha = 0.7f),
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     shape = RoundedCornerShape(48.dp)
                 ) {
-                    Text(attack, textAlign = TextAlign.Center, modifier = Modifier.padding(8.dp).fillMaxWidth())
+                    Text(
+                        attack,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
+                    )
                 }
             }
 

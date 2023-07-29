@@ -18,7 +18,9 @@ data class PokemonDetail(
     val apiGeneration: Int,
     val apiEvolutions: List<Evolution>,
     val apiResistances: List<Resistance>,
-  //  val apiPreEvolution: PreEvolution? = null
+  //  val apiPreEvolution: PreEvolution? = null,
+    var isInPokedex : Boolean = false,
+    var isCaptured : Boolean = false
 )
 
     data class PreEvolution(val name: String, val pokedexId: Int)
