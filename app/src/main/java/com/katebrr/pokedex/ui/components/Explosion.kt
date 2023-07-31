@@ -22,7 +22,7 @@ fun Explosion(progress: Float, modifier: Modifier = Modifier) {
     val particles = remember {
         List(500) {
             Particle(
-                color = Color(listOf(Color.Gray.value, Color.DarkGray.value, Color.LightGray.value).random()),
+                color = Color(listOf(0xffea4335, 0xff4285f4, 0xfffbbc05, 0xff34a853).random()),
                 startXPosition = sizePxHalf.toInt(),
                 startYPosition = sizePxHalf.toInt(),
                 maxHorizontalDisplacement = sizePx * randomInRange(-0.9f, 0.9f),

@@ -5,7 +5,6 @@ plugins {
     id 'com.google.dagger.hilt.android'
     id 'kotlin-kapt'
     id 'kotlinx-serialization'
-
 }
 
 
@@ -124,7 +123,14 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-pager:0.21.2-beta")
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.21.2-beta")
 
-}
+    def room_version = "2.5.2"
 
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+
+    // To use Kotlin annotation processing tool (kapt)
+//    ksp("androidx.room:room-compiler:$room_version")
+    implementation ("androidx.room:room-ktx:$room_version")
+}
 
 

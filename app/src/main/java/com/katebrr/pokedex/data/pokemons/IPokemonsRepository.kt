@@ -7,4 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface IPokemonsRepository {
     fun getPokemons(): Flow<List<Pokemon>>
     fun getPokemon(id: Int): Flow<PokemonDetail>
+
+//    fun addToPokedex(pokemon: PokemonDetail): Flow<Unit>
+//    fun deleteFromPokedex(pokemon: PokemonDetail): Flow<Unit>
+//    fun getPokemonsFromPokedex(): Flow<List<PokemonDetail>>
 }

@@ -274,7 +274,7 @@ fun PokemonTabBar(
     pokemon: PokemonDetail
 ) {
     var tabSelected by rememberSaveable {
-        mutableStateOf(2)
+        mutableStateOf(0)
     }
     val tabs = listOf("Info", "Genetics", "Attacks")
     var pagerState = rememberPagerState()
@@ -333,7 +333,7 @@ fun PokemonTabBar(
 
 @Composable
 fun InfoScreen(pokemon: PokemonDetail) {
-    val pokStats = pokemon.stats
+    val pokStats = pokemon.stats!!
     val total =
         pokStats.HP + pokStats.attack + pokStats.defense + pokStats.specialAttack + pokStats.specialDefense + pokStats.speed
     Column(
@@ -445,7 +445,7 @@ fun GeneticsScreen(pokemon: PokemonDetail) {
 @Composable
 fun AttacksScreen(pokemon: PokemonDetail) {
 
-    val doubleDamages = pokemon.apiResistances.filter { it.damageMultiplier == 4.0 }.map { it.name }
+    val doubleDamages = pokemon.apiResistances!!.filter { it.damageMultiplier == 4.0 }.map { it.name }
     val damages = pokemon.apiResistances.filter { it.damageMultiplier == 2.0 }.map { it.name }
     val immune = pokemon.apiResistances.filter { it.damageMultiplier == 1.0 }.map { it.name }
     val resistant = pokemon.apiResistances.filter { it.damageMultiplier == 0.5 }.map { it.name }

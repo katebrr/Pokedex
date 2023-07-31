@@ -44,8 +44,12 @@ class PokemonDetailViewModel @Inject constructor(
             initialValue = PokemonUiState.Loading
         )
 
+  //  fun addToPokedex(pokemon: PokemonDetail) {
+ //       pokemonsRepository.addToPokedex(pokemon)
+  //  }
 
 }
+
 
 sealed interface PokemonUiState {
     object Loading : PokemonUiState
