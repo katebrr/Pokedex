@@ -306,7 +306,9 @@ fun PokemonItem(pokemon: Pokemon, navigateToPokemon: (String) -> Unit) {
 
 @Composable
 fun ExpandedItem(pokemonTypes: List<PokemonTypes>) {
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 6.dp )) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 6.dp)) {
         pokemonTypes.map { type ->
             Row(modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -474,6 +476,11 @@ fun FilterMenu(
                 item {
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
                     EvolutionOption(filters, onHasEvolutionChange)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                item {
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                    PokedexOption(filters, onIsInPokedexChange)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 item {
@@ -675,13 +682,56 @@ fun EvolutionOption(
             )
         )
     }
-
-
 }
 
 @Composable
-fun PokedexOption() {
+fun PokedexOption(
+   filters: FilterOptions,
+   onIsInPokedexChange: (Boolean) -> Unit
+)
+   {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Is in Pokedex:",
+                modifier = Modifier
+                    .paddingFromBaseline(top = 32.dp, bottom = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Normal
+            )
 
+            val icon: (@Composable () -> Unit)? = if (filters.isInPokedex) {
+                {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                    )
+                }
+            } else {
+                null
+            }
+            Switch(
+                checked = filters.isInPokedex,
+                onCheckedChange = {onIsInPokedexChange(!filters.isInPokedex)},
+                thumbContent = icon,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                    checkedTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    checkedBorderColor = MaterialTheme.colorScheme.secondaryContainer,
+                    checkedIconColor = MaterialTheme.colorScheme.background,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.secondaryContainer,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.background,
+                    uncheckedBorderColor = MaterialTheme.colorScheme.secondaryContainer
+
+                )
+            )
+        }
 }
 
 @Composable

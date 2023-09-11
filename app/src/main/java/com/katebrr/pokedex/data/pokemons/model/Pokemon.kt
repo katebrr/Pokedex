@@ -13,7 +13,8 @@ data class Pokemon(
     val sprite: String,
     val stats: PokemonStats,
     val apiTypes: List<PokemonTypes>,
-    val apiEvolutions: List<Evolution>
+    val apiEvolutions: List<Evolution>,
+    var isInPokedex: Boolean = false
 )
 
 

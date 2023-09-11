@@ -2,6 +2,7 @@ package com.katebrr.pokedex.data.pokemons.model
 
 
 
+import android.util.Log
 import com.katebrr.pokedex.core.database.models.PokemonModel
 import com.katebrr.pokedex.core.network.model.PokemonDetailResponse
 
@@ -67,6 +68,7 @@ fun PokemonModel.toDataModel(): PokemonDetail  {
 
 fun PokemonDetail.toLocalModel(): PokemonModel  {
 
+    Log.e("tra", "i am convertunf")
     return PokemonModel(
         id = id,
         name = name,

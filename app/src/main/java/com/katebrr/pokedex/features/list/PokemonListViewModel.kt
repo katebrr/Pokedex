@@ -52,11 +52,6 @@ class PokemonListViewModel
     private var _order by mutableStateOf(
         PokemonOrder.SORT_BY_ID_ASC
     )
-//    var order: StateFlow<PokemonOrder> = snapshotFlow { _order }.stateIn(
-//        scope = viewModelScope,
-//        started = SharingStarted.WhileSubscribed(),
-//        initialValue = _order
-//    )
 
     //listening to Filter Options change
     private var _filterOptions by mutableStateOf(
@@ -119,6 +114,13 @@ class PokemonListViewModel
                                     } else {
                                         true
                                     }
+                                    &&
+                                    if (filters.isInPokedex) {
+                                        pokemon.isInPokedex
+                                    } else {
+                                        true
+                                    }
+
 
                         }
 
@@ -148,12 +150,22 @@ class PokemonListViewModel
         loadPokemons()
     }
 
+//    private fun loadFromPokedex() {
+//        viewModelScope.launch {
+//            pokemonsRepository.getPokemosIfInPokedex().asResultWithLoading().collect() { result ->
+//                pokemonsFromPokedex.update { result }
+//            }
+//        }
+//    }
+
     fun loadPokemons() {
         viewModelScope.launch {
             pokemonsRepository.getPokemons().asResultWithLoading().collect() { result ->
                 _pokemons.update { result }
             }
         }
+
+
     }
 
     fun onOrderChoice(orderIndex: Int) {

@@ -3,6 +3,7 @@ package com.katebrr.pokedex.features.pokemon
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -67,28 +68,41 @@ import com.google.accompanist.pager.rememberPagerState
 import com.katebrr.pokedex.R
 import com.katebrr.pokedex.data.pokemons.model.PokemonDetail
 import com.katebrr.pokedex.ui.components.Explosion
+import com.katebrr.pokedex.ui.utils.getDominantColor
 import com.katebrr.pokedex.ui.utils.randomTillZero
 import com.katebrr.pokedex.ui.utils.typeToColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 import java.net.URL
+import kotlin.reflect.KFunction1
 
 
 @Composable
 fun PokemonDetailScreenRoute(
-    pokemonId: String, onBackClick: () -> Unit, viewModel: PokemonDetailViewModel = hiltViewModel()
+    pokemonId: String,
+    onBackClick: () -> Unit,
+    viewModel: PokemonDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
     PokemonDetailScreen(
-        pokemonId = pokemonId, onBackClick = onBackClick, uiState = uiState
+        pokemonId = pokemonId,
+        addToPokedex = viewModel::addToPokedex,
+        onBackClick = onBackClick,
+        uiState = uiState
     )
 }
 
 @Composable
 fun PokemonDetailScreen(
-    pokemonId: String, onBackClick: () -> Unit, uiState: PokemonUiState
-) {
+    pokemonId: String,
+    addToPokedex: (PokemonDetail) -> Unit,
+    onBackClick: () -> Unit,
+    uiState: PokemonUiState,
+
+
+    ) {
 
     Column(
         Modifier.fillMaxSize(),
@@ -105,7 +119,11 @@ fun PokemonDetailScreen(
             }
 
             is PokemonUiState.Success -> {
-                PokemonDetailScaffold(pokemon = uiState.pokemon, onBackClick = onBackClick)
+                PokemonDetailScaffold(
+                    pokemon = uiState.pokemon,
+                    addToPokedex = addToPokedex,
+                    onBackClick = onBackClick
+                )
             }
         }
     }
@@ -114,16 +132,19 @@ fun PokemonDetailScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PokemonDetailScaffold(
-    pokemon: PokemonDetail, onBackClick: () -> Unit
+    pokemon: PokemonDetail,
+    addToPokedex: (PokemonDetail) -> Unit,
+    onBackClick: () -> Unit
 ) {
+    var pokemon by remember {
+        mutableStateOf(pokemon)
+    }
     var bgColor by remember { mutableStateOf(Color(0)) }
-    var isCaptured by remember { mutableStateOf(false) }
     val captureAnimationProgress by animateFloatAsState(
-        targetValue = if (isCaptured) 1f else 0f,
+        targetValue = if (pokemon.isCaptured) 1f else 0f,
         animationSpec = tween(durationMillis = 8000),
         label = "animate the capture of a pokemon"
     )
-
     LaunchedEffect(Unit) {
         // Call the suspended function from a coroutine scope
         val color = withContext(Dispatchers.IO) {
@@ -142,9 +163,21 @@ fun PokemonDetailScaffold(
         topBar = {
             PokemonTopBar(
                 pokemon,
+                addToPokedex2 = {
+                    pokemon = pokemon.copy(
+                        isInPokedex = true
+                    )
+                    addToPokedex(pokemon)
+                },
                 bgColor,
                 onBackClick,
-                onCaptureClick = { isCaptured = true },
+                onCaptureClick = {
+                    pokemon = pokemon.copy(
+                        isInPokedex = true,
+                        isCaptured = true
+                    )
+                    addToPokedex(pokemon)
+                },
                 captureProgress = captureAnimationProgress
             )
         }
@@ -178,7 +211,7 @@ fun PokemonDetailScaffold(
                     model = pokemon.image,
                     contentDescription = pokemon.name,
                     modifier = Modifier
-                        .height(if (captureAnimationProgress > 0.9f || captureAnimationProgress < 0.1f) 250.dp else (captureAnimationProgress.randomTillZero()*20).dp+250.dp)
+                        .height(if (captureAnimationProgress > 0.9f || captureAnimationProgress < 0.1f) 250.dp else (captureAnimationProgress.randomTillZero() * 20).dp + 250.dp)
                         .fillMaxSize()
                         .offset(y = (-200).dp)
                 )
@@ -198,11 +231,13 @@ fun PokemonDetailScaffold(
 @Composable
 fun PokemonTopBar(
     pokemon: PokemonDetail,
+    addToPokedex2: (PokemonDetail) -> Unit,
     bgColor: Color,
     onBackClick: () -> Unit,
     onCaptureClick: () -> Unit,
     captureProgress: Float
 ) {
+
     TopAppBar(
         title = {
             Row(
@@ -233,22 +268,21 @@ fun PokemonTopBar(
             titleContentColor = Color.White
         ),
         actions = {
-            IconButton(onClick = { /*TODO*/ }, enabled = captureProgress != 1f) {
+            IconButton(onClick = {
+                addToPokedex2(pokemon)
+            }, enabled = (captureProgress != 1f && !pokemon.isInPokedex)) {
                 Icon(
                     painterResource(id = R.drawable.pokedex_icon),
                     contentDescription = "add to pokedex",
                 )
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = null,
-                    modifier = Modifier.rotate(captureProgress * 360),
-                    tint = Color(
-                        alpha = (Color.White.alpha * (captureProgress)).coerceAtMost(1f),
-                        red = (Color.White.red * (captureProgress)).coerceAtMost(1f),
-                        green = (Color.White.green * (captureProgress)).coerceAtMost(1f),
-                        blue = (Color.White.blue * (captureProgress)).coerceAtMost(1f)
+                if (pokemon.isInPokedex) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White
                     )
-                )
+
+                }
             }
             IconButton(onClick = onCaptureClick) {
                 Icon(
@@ -399,7 +433,6 @@ fun StatsItem(
             )
         }
 
-
         Row(
             modifier = Modifier.fillMaxWidth(0.9f),
             verticalAlignment = Alignment.CenterVertically,
@@ -423,10 +456,7 @@ fun StatsItem(
                 ),
                 backgroundColor = Color.LightGray
             )
-
         }
-
-
     }
 }
 
@@ -445,7 +475,8 @@ fun GeneticsScreen(pokemon: PokemonDetail) {
 @Composable
 fun AttacksScreen(pokemon: PokemonDetail) {
 
-    val doubleDamages = pokemon.apiResistances!!.filter { it.damageMultiplier == 4.0 }.map { it.name }
+    val doubleDamages =
+        pokemon.apiResistances!!.filter { it.damageMultiplier == 4.0 }.map { it.name }
     val damages = pokemon.apiResistances.filter { it.damageMultiplier == 2.0 }.map { it.name }
     val immune = pokemon.apiResistances.filter { it.damageMultiplier == 1.0 }.map { it.name }
     val resistant = pokemon.apiResistances.filter { it.damageMultiplier == 0.5 }.map { it.name }
@@ -544,31 +575,7 @@ fun AttacksScreenItem(pokemonResistance: String, pokemonAttack: List<String>) {
 }
 
 
-suspend fun getDominantColor(imageURL: String): Int? {
-    return withContext(Dispatchers.IO) {
-        try {
-            val image = URL(imageURL)
-            val connection = image.openConnection()
-            connection.connect()
 
-            val contentLength = connection.contentLength
-            val input = connection.getInputStream().buffered()
-
-            // Decode the input stream into a Bitmap
-            val options = BitmapFactory.Options().apply {
-                inSampleSize = 1
-                inPreferredConfig = Bitmap.Config.ARGB_8888
-            }
-            val bitmap = BitmapFactory.decodeStream(input, null, options)
-
-            // Generate a palette from the bitmap and get the dominant color
-            Palette.from(bitmap!!).generate().dominantSwatch?.rgb
-
-        } catch (e: Exception) {
-            null
-        }
-    }
-}
 
 
 
