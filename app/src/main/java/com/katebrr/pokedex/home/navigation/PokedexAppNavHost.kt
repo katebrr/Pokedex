@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.katebrr.pokedex.features.list.navigation.pokemonListScreen
 import com.katebrr.pokedex.features.pokedex.navigation.pokedexScreen
+import com.katebrr.pokedex.features.pokemap.navigation.navigateToMap
+import com.katebrr.pokedex.features.pokemap.navigation.pokemapScreen
 import com.katebrr.pokedex.features.pokemon.navigation.navigateToPokemon
 import com.katebrr.pokedex.features.pokemon.navigation.pokemonDetailScreen
 import com.katebrr.pokedex.features.types.navigation.typesScreen
@@ -22,7 +24,8 @@ fun PokedexAppNavHost(
         modifier = modifier
     ) {
         homeScreen(mainNavController = navController)
-        pokedexScreen(onBackClick = navController::popBackStack)
+        pokedexScreen(onBackClick = navController::popBackStack, navigateToMap = navController::navigateToMap)
+        pokemapScreen(onBackClick = navController::popBackStack)
         pokemonListScreen(onBackClick = navController::popBackStack,
             navigateToPokemonDetail = { navController.navigateToPokemon(it) })
 

@@ -20,11 +20,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,16 +57,19 @@ import com.katebrr.pokedex.features.pokemon.PokemonDetailScaffold
 import com.katebrr.pokedex.features.pokemon.PokemonUiState
 import com.katebrr.pokedex.ui.utils.getDominantColor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
 fun PokedexScreenRoute(
     onBackClick: () -> Unit,
+    navigateToMap: () -> Unit,
     viewModel: PokedexViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     PokedexScreen(
         onBackClick = onBackClick,
+        navigateToMap = navigateToMap,
         uiState = uiState,
         deleteFromPok = viewModel::deleteFromPokedex
     )
@@ -74,6 +79,7 @@ fun PokedexScreenRoute(
 @Composable
 fun PokedexScreen(
     onBackClick: () -> Unit,
+    navigateToMap: () -> Unit,
     uiState: PokedexUiState,
     deleteFromPok: (PokemonDetail) -> Unit
 ) {
@@ -95,6 +101,7 @@ fun PokedexScreen(
                 PokedexScaffold(
                     uiState.pokemons,
                     onBackClick,
+                    navigateToMap,
                     deleteFromPok
                 )
             }
@@ -108,6 +115,7 @@ fun PokedexScreen(
 fun PokedexScaffold(
     pokemons: List<PokemonDetail>,
     onBackClick: () -> Unit,
+    navigateToMap: () -> Unit,
     deleteFromPok: (PokemonDetail) -> Unit
 ) {
     Scaffold(modifier = Modifier,
@@ -122,11 +130,20 @@ fun PokedexScaffold(
                         )
                     }
                 })
-        }) { padding ->
+        },
+        floatingActionButton = {MapFAB(navigateToMap)}) { padding ->
         PokedexGrid(padding, pokemons, deleteFromPok)
     }
 }
 
+@Composable
+fun MapFAB(
+    navigateToMap: () -> Unit
+) {
+    FloatingActionButton(onClick = navigateToMap ) {
+        Icon(Icons.Outlined.FilterList, contentDescription = null)
+    }
+}
 @Composable
 fun PokedexGrid(
     padding: PaddingValues,

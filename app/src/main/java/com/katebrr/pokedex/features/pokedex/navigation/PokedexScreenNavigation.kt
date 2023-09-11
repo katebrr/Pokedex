@@ -12,10 +12,14 @@ fun NavController.navigateToPokedex(navOptions: NavOptions? = null) {
     this.navigate(pokedexRoute, navOptions)
 }
 
-fun NavGraphBuilder.pokedexScreen(onBackClick: () -> Unit) {
+fun NavGraphBuilder.pokedexScreen(
+    onBackClick: () -> Unit,
+    navigateToMap: () -> Unit
+) {
     composable(route = pokedexRoute) {
         PokedexScreenRoute(
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            navigateToMap = navigateToMap
         )
     }
 }
