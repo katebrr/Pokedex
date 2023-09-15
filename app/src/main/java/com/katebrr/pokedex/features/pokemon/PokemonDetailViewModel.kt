@@ -1,6 +1,5 @@
 package com.katebrr.pokedex.features.pokemon
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,15 +9,13 @@ import com.katebrr.pokedex.core.common.asResultWithLoading
 import com.katebrr.pokedex.data.pokemons.model.PokemonDetail
 import com.katebrr.pokedex.data.pokemons.repositories.PokemonsRepository
 import com.katebrr.pokedex.features.pokemon.navigation.IdArg
+import com.katebrr.pokedex.features.pokemon.utils.Coordinates
+import com.katebrr.pokedex.features.pokemon.utils.generateRandomEuropeanCoordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -27,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PokemonDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val pokemonsRepository: PokemonsRepository
+    private val pokemonsRepository: PokemonsRepository,
+ //   private val navigationService: MyNavigationService
 ) : ViewModel() {
 
     private val idArg = IdArg(savedStateHandle).id.toInt()
@@ -60,7 +58,15 @@ class PokemonDetailViewModel @Inject constructor(
 
     fun addToPokedex(pokemon: PokemonDetail) {
         viewModelScope.launch {
-            pokemonsRepository.addToPokedex(pokemon).asResult().collect {
+     //      var latestLocation = navigationService.getLocationFromService()
+
+            var updatedPokemon: PokemonDetail
+         //   if (latestLocation != null)
+         //       updatedPokemon = pokemon.copy(latitude = latestLocation.latitude, longitude = latestLocation.longitude )
+     //       else
+                val coord: Coordinates = generateRandomEuropeanCoordinates()
+                updatedPokemon = pokemon.copy(latitude = coord.latitude, longitude = coord.longitude)
+            pokemonsRepository.addToPokedex(updatedPokemon).asResult().collect {
                 result ->
                     when(result) {
                         is Result.Success -> {
@@ -74,6 +80,7 @@ class PokemonDetailViewModel @Inject constructor(
             }
         }
     }
+
 
 }
 

@@ -7,11 +7,11 @@ import com.katebrr.pokedex.core.network.model.EvolutionResponse
 import com.katebrr.pokedex.core.network.model.PokemonDetailResponse
 
 
-
 import com.katebrr.pokedex.core.network.model.PokemonResistancesResponse
 import com.katebrr.pokedex.core.network.model.PokemonResponse
 import com.katebrr.pokedex.core.network.model.PokemonStatsResponse
 import com.katebrr.pokedex.core.network.model.PokemonTypesResponse
+import com.katebrr.pokedex.core.network.model.TypesResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -44,65 +44,20 @@ class PokemonApi @Inject constructor() : IPokemonApi {
                 isLenient = true
                 ignoreUnknownKeys = true
 
-
-                }
-            )
-
-        }
-
-
+            }) }
 
         defaultRequest {
             url(API_URL)
         }
     }
 
-//    private val client2 = HttpClient(CIO){
-//        install(ContentNegotiation) {
-//            json(Json {
-//                // prettyPrint = true
-//                isLenient = true
-//                ignoreUnknownKeys = true
-//                serializersModule = SerializersModule {
-//                    polymorphic(PokemonDetailResponse::class) {
-//                        subclass(
-//                            PokemonDetailResponseString::class,
-//                            PokemonDetailResponseString.serializer()
-//                        )
-//                        subclass(
-//                            PokemonDetailResponseClass::class,
-//                            PokemonDetailResponseClass.serializer()
-//                        )
-//                    }
-//
-//                }
-//              //  classDiscriminator = "apiPreEvolution"
-//                useArrayPolymorphism = true
-//            }
-//            )
-//
-//        }
-//
-//
-//
-//        defaultRequest {
-//            url(API_URL)
-//        }
-//    }
-
     override suspend fun getPokemons(): List<PokemonResponse> {
         return try {
             client.get("pokemon/generation/1").body()
         } catch (e: Exception) {
-            Log.e("API call", e.toString())
             emptyList()
         }
-
     }
-
-
-
-
 
     override suspend fun getPokemon(id: Int): PokemonDetailResponse {
         return try {
@@ -231,30 +186,26 @@ class PokemonApi @Inject constructor() : IPokemonApi {
                         pokedexId = 2
                     )
                 ),
-             //  apiPreEvolution = "none"
+                //  apiPreEvolution = "none"
             )
+        }
+    }
+
+    override suspend fun getTypes(): List<TypesResponse> {
+        return try {
+            client.get("types").body()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    override suspend fun getPokemonsOfType(type: String): List<PokemonResponse> {
+        return try {
+            client.get("pokemon/type/${type}").body()
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 }
 
-
-//    object PokemonDetailResponseSerializer :
-//        JsonContentPolymorphicSerializer<PokemonDetailResponse>(PokemonDetailResponse::class) {
-//        override fun selectDeserializer(element: JsonElement) = when {
-//            "apiPreEvolution" in element.jsonObject.keys -> {
-//
-//                val preEvolution = element.jsonObject["apiPreEvolution"]
-//                when (preEvolution) {
-//                    is JsonPrimitive -> PokemonDetailResponseString.serializer()
-//                    is JsonObject -> PokemonDetailResponseClass.serializer()
-//                    else -> error("Unknown type")
-//                }
-//            }
-//
-//            else -> error("No PreEvolution Property")
-//
-//        }
-//
-//
-//    }
 

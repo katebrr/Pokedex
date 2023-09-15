@@ -22,10 +22,11 @@ data class PokemonDetail(
     val apiResistances: List<Resistance>?,
   //  val apiPreEvolution: PreEvolution? = null,
     var isInPokedex : Boolean = false,
-    var isCaptured : Boolean = false
+    var isCaptured : Boolean = false,
+    var latitude: Double = 0.0,
+    var longitude: Double = 0.0
 )
 
-    data class PreEvolution(val name: String, val pokedexId: Int)
 
 data class Resistance(
     val name: String,
@@ -62,19 +63,22 @@ fun PokemonModel.toDataModel(): PokemonDetail  {
         apiEvolutions = null,
         apiResistances = null,
         isInPokedex = true,
-        isCaptured = isCaptured == 1
+        isCaptured = isCaptured == 1,
+        latitude = latitude,
+        longitude = longitude
     )
 }
 
 fun PokemonDetail.toLocalModel(): PokemonModel  {
 
-    Log.e("tra", "i am convertunf")
     return PokemonModel(
         id = id,
         name = name,
         image = image,
         sprite = sprite,
-        isCaptured = if(isCaptured) 1 else 0
+        isCaptured = if(isCaptured) 1 else 0,
+        latitude = latitude,
+        longitude = longitude
     )
 }
 fun PokemonResistancesResponse.toDataModel() = Resistance(
@@ -82,6 +86,3 @@ fun PokemonResistancesResponse.toDataModel() = Resistance(
     damageMultiplier = damage_multiplier,
     damageRelation = damage_relation
 )
-
-fun PokemonPreEvolutionResponse.toDataModel() =
-    PreEvolution(name = name, pokedexId = pokedexIdd)

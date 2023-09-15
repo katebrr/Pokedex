@@ -223,13 +223,3 @@ private fun Cards(
 
     }
 }
-
-
-
-//@Preview(showBackground = true)
-//@Composable
-//fun HomeScreenPreview() {
-//    PokedexTheme {
-//        HomeScreen(viewModel = HomeViewModel())
-//    }
-//}

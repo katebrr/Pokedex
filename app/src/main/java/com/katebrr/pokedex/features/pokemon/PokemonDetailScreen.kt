@@ -1,9 +1,7 @@
 package com.katebrr.pokedex.features.pokemon
 
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Log
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi

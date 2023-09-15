@@ -1,16 +1,15 @@
 package com.katebrr.pokedex.data.pokemons.repositories
 
-import android.util.Log
-import com.katebrr.pokedex.core.database.models.PokemonModel
 import com.katebrr.pokedex.data.pokemons.IPokemonsRepository
 import com.katebrr.pokedex.data.pokemons.datasources.PokemonsLocalDataSource
 import com.katebrr.pokedex.data.pokemons.datasources.PokemonsRemoteDataSource
 import com.katebrr.pokedex.data.pokemons.model.Pokemon
 import com.katebrr.pokedex.data.pokemons.model.PokemonDetail
+import com.katebrr.pokedex.data.pokemons.model.PokemonType
 import com.katebrr.pokedex.data.pokemons.model.toDataModel
 import com.katebrr.pokedex.data.pokemons.model.toLocalModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
+
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -67,4 +66,18 @@ class PokemonsRepository @Inject constructor(
         }
     }
 
+    override fun getTypes(): Flow<List<PokemonType>> = flow {
+        var types = remoteDataSource.getTypes().map { it.toDataModel() }
+        types.forEach { type ->
+            type.pokemons = remoteDataSource.getPokemonsOfType(type.name).map { it.toDataModel() }
+            type.count = type.pokemons.count()}
+        emit(types)
+    }
+
+    override fun getPokemonOfType(type: String): Flow<List<Pokemon>> = flow {
+        emit(remoteDataSource.getPokemonsOfType(type)
+            .map { it.toDataModel() })
+    }
+
 }
+

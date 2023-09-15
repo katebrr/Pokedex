@@ -10,7 +10,9 @@ data class PokemonModel(
     @ColumnInfo val name: String,
     @ColumnInfo val image: String,
     @ColumnInfo val sprite: String,
-    @ColumnInfo var isCaptured: Int
+    @ColumnInfo var isCaptured: Int,
+    @ColumnInfo var latitude: Double,
+    @ColumnInfo var longitude: Double
 )
 
 
